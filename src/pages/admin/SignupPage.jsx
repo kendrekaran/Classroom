@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, GraduationCap, BookOpen } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, BookOpen } from 'lucide-react';
 import axios from 'axios';
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
 function TeacherSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,22 +25,43 @@ function TeacherSignupPage() {
     setError('');
     
     try {
+      signupSchema.parse({ name, email, password });
+
       const response = await axios.post('http://localhost:3000/admin/register', {
         name,
         email,
         password
       });
+
+      console.log('Registration response:', response.data); 
       
       localStorage.setItem('teacherToken', response.data.token);
-      localStorage.setItem('teacherUser', JSON.stringify(response.data.teacher));
       
+      
+      if (response.data.admin) {
+        localStorage.setItem('teacherUser', JSON.stringify(response.data.admin));
+      } else if (response.data.teacher) {
+        localStorage.setItem('teacherUser', JSON.stringify(response.data.teacher));
+      } else {
+        
+        localStorage.setItem('teacherUser', JSON.stringify({ 
+          name: name,
+          email: email 
+        }));
+      }
+
       navigate('/teacher');
     } catch (error) {
       console.error('Registration error:', error);
-      setError(
-        error.response?.data?.message || 
-        'Registration failed. Please try again later.'
-      );
+
+      if (error.errors) {
+        setError(error.errors[0].message);
+      } else {
+        setError(
+          error.response?.data?.message || 
+          'Registration failed. Please try again later.'
+        );
+      }
     } finally {
       setLoading(false);
     }

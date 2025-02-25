@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, BookOpen } from 'lucide-react';
 import axios from 'axios';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
 
 function TeacherLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,19 +23,37 @@ function TeacherLoginPage() {
     setError('');
     
     try {
+      loginSchema.parse({ email, password });
+
       const response = await axios.post('http://localhost:3000/admin/login', {
         email,
         password
       });
+
+      console.log('Login response:', response.data); 
       
       localStorage.setItem('teacherToken', response.data.token);
-      localStorage.setItem('teacherUser', JSON.stringify(response.data.teacher));
       
+      
+      if (response.data.admin) {
+        localStorage.setItem('teacherUser', JSON.stringify(response.data.admin));
+      } else if (response.data.teacher) {
+        localStorage.setItem('teacherUser', JSON.stringify(response.data.teacher));
+      } else {
+        
+        localStorage.setItem('teacherUser', JSON.stringify({ 
+          name: email.split('@')[0], 
+          email: email 
+        }));
+      }
+
       navigate('/teacher');
     } catch (error) {
       console.error('Login error:', error);
-      
-      if (error.response?.status === 404) {
+
+      if (error.errors) {
+        setError(error.errors[0].message);
+      } else if (error.response?.status === 404) {
         setError('Teacher account not found. Please check your email.');
       } else if (error.response?.status === 401) {
         setError('Invalid password. Please try again.');
@@ -76,7 +100,7 @@ function TeacherLoginPage() {
               {error}
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -144,8 +168,6 @@ function TeacherLoginPage() {
               </button>
             </div>
           </form>
-
-        
         </div>
       </div>
     </div>
