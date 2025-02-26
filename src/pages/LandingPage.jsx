@@ -1,46 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight,  LogOut, User, BookOpen, Award, Clock, Users, MessageSquare, Zap } from 'lucide-react';
-
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { ArrowRight, LogOut, User, BookOpen, Award, Clock, Users, MessageSquare, Zap, Moon, Sun } from "lucide-react"
 
 const features = [
   {
-    title: 'Expert Instructors',
-    description: 'Learn from experienced educators who specialize in your subject area',
-    icon: <Award className="h-8 w-8 text-indigo-600" />
+    title: "Expert Instructors",
+    description: "Learn from experienced educators who specialize in your subject area",
+    icon: <Award className="h-8 w-8 text-indigo-600" />,
   },
   {
-    title: 'Interactive Learning',
-    description: 'Engage with course materials through quizzes, exercises, and live sessions',
-    icon: <Zap className="h-8 w-8 text-indigo-600" />
+    title: "Interactive Learning",
+    description: "Engage with course materials through quizzes, exercises, and live sessions",
+    icon: <Zap className="h-8 w-8 text-indigo-600" />,
   },
   {
-    title: 'Study Groups',
-    description: 'Connect with peers for collaborative learning and problem-solving',
-    icon: <Users className="h-8 w-8 text-indigo-600" />
+    title: "Study Groups",
+    description: "Connect with peers for collaborative learning and problem-solving",
+    icon: <Users className="h-8 w-8 text-indigo-600" />,
   },
   {
-    title: 'Practice Tests',
-    description: 'Prepare for exams with our comprehensive practice materials',
-    icon: <BookOpen className="h-8 w-8 text-indigo-600" />
+    title: "Practice Tests",
+    description: "Prepare for exams with our comprehensive practice materials",
+    icon: <BookOpen className="h-8 w-8 text-indigo-600" />,
   },
   {
-    title: 'Flexible Schedule',
-    description: 'Access course materials anytime, anywhere to fit your learning pace',
-    icon: <Clock className="h-8 w-8 text-indigo-600" />
+    title: "Flexible Schedule",
+    description: "Access course materials anytime, anywhere to fit your learning pace",
+    icon: <Clock className="h-8 w-8 text-indigo-600" />,
   },
   {
-    title: 'Personal Guidance',
-    description: 'Get personalized feedback and support from dedicated mentors',
-    icon: <MessageSquare className="h-8 w-8 text-indigo-600" />
-  }
-];
+    title: "Personal Guidance",
+    description: "Get personalized feedback and support from dedicated mentors",
+    icon: <MessageSquare className="h-8 w-8 text-indigo-600" />,
+  },
+]
 
 function LandingPage() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check system preference on mount
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDarkMode(true);
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -55,82 +62,87 @@ function LandingPage() {
 
 
   const handleLogout = () => {
-
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
     
-
     setIsLoggedIn(false);
     setUser(null);
     navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-
-      <nav className="bg-white shadow-md sticky top-0 z-10">
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
+      {/* Improved navbar with better light mode styling */}
+      <nav className="bg-white shadow-md sticky top-0 z-10 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
 
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center">
                 <BookOpen className="h-8 w-8 text-indigo-600 mr-2" />
-                <h1 className="text-2xl font-bold text-indigo-600">EduCoach</h1>
+                <h1 className="text-2xl font-bold text-indigo-600 dark:text-white">EduCoach</h1>
               </Link>
             </div>
             
-
             <div className="hidden md:flex space-x-6">
-              <Link to="/courses" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+              <Link to="/courses" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
                 Courses
               </Link>
-              <Link to="/teachers" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+              <Link to="/teachers" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
                 Teachers
               </Link>
-              <Link to="/resources" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+              <Link to="/resources" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
                 Resources
               </Link>
-              <Link to="/faq" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+              <Link to="/faq" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white">
                 FAQs
               </Link>
             </div>
             
-
             <div className="flex space-x-4">
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-2 rounded-md text-gray-700 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-white"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
               {isLoggedIn ? (
-
                 <>
-                  <div className="flex items-center text-gray-700">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <User className="h-4 w-4 mr-2" />
                     <span className="mr-4 font-medium">{user?.name || 'Student'}</span>
                   </div>
                   <Link
                     to="/dashboard"
-                    className="hidden md:flex items-center text-indigo-600 hover:text-indigo-800 px-3 py-2 rounded-md text-sm font-medium"
+                    className="hidden md:flex items-center text-indigo-600 hover:text-indigo-800 px-3 py-2 rounded-md text-sm font-medium dark:text-white dark:hover:text-indigo-300"
                   >
                     My Dashboard
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="flex items-center text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white"
                   >
                     <LogOut className="h-4 w-4 mr-1" />
                     Logout
                   </button>
                 </>
               ) : (
-
                 <>
                   <Link
                     to="/teacher/login"
-                    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white"
                   >
                     Teacher Login
                   </Link>
                   <Link
                     to="/student/login"
-                    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium dark:text-gray-300 dark:hover:text-white"
                   >
                     Student Login
                   </Link>
@@ -147,12 +159,11 @@ function LandingPage() {
         </div>
       </nav>
 
-
+      {/* Hero section - unchanged color scheme works well in both modes */}
       <div className="relative bg-indigo-800 text-white">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 to-indigo-700 opacity-90"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="md:w-2/3">
-
             <h2 className="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
               <span className="block">Achieve Academic</span>
               <span className="block text-indigo-300">Excellence</span>
@@ -165,10 +176,9 @@ function LandingPage() {
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               {isLoggedIn ? (
-
                 <Link
                   to="/dashboard"
-                  className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 md:py-4 md:text-lg md:px-10"
+                  className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 md:py-4 md:text-lg md:px-10 dark:bg-gray-100 dark:text-indigo-800"
                 >
                   Go to My Courses
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -177,7 +187,7 @@ function LandingPage() {
                 <>
                   <Link
                     to="/student/signup"
-                    className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 md:py-4 md:text-lg md:px-10"
+                    className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 md:py-4 md:text-lg md:px-10 dark:bg-gray-100 dark:text-indigo-800"
                   >
                     Start Learning
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -195,47 +205,47 @@ function LandingPage() {
         </div>
       </div>
 
-
-      <div className="bg-white py-12">
+      {/* Stats section - improved light mode styling */}
+      <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-indigo-50'} py-12`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <p className="text-4xl font-bold text-indigo-600">10k+</p>
-              <p className="mt-2 text-gray-600">Students</p>
+              <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">10k+</p>
+              <p className="mt-2 text-gray-700 dark:text-gray-300">Students</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-indigo-600">95%</p>
-              <p className="mt-2 text-gray-600">Success Rate</p>
+              <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">95%</p>
+              <p className="mt-2 text-gray-700 dark:text-gray-300">Success Rate</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-indigo-600">50+</p>
-              <p className="mt-2 text-gray-600">Expert Teachers</p>
+              <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">50+</p>
+              <p className="mt-2 text-gray-700 dark:text-gray-300">Expert Teachers</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-indigo-600">100+</p>
-              <p className="mt-2 text-gray-600">Courses</p>
+              <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">100+</p>
+              <p className="mt-2 text-gray-700 dark:text-gray-300">Courses</p>
             </div>
           </div>
         </div>
       </div>
 
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-
+      {/* Main content area - improved light mode styling */}
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ${isDarkMode ? 'dark:bg-gray-800 dark:text-white' : 'bg-white text-gray-800'}`}>
+        {/* Features section */}
         <div className="mb-20">
-          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">Why Choose EduCoach?</h3>
+          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">Why Choose EduCoach?</h3>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 border border-gray-100"
+                className={`${isDarkMode ? 'dark:bg-gray-700 dark:border-gray-600' : 'bg-white border border-indigo-100 shadow-md'} rounded-xl p-8 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1`}
               >
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-4 p-3 bg-indigo-50 rounded-full">
+                  <div className={`mb-4 p-3 ${isDarkMode ? 'bg-indigo-800' : 'bg-indigo-100'} rounded-full`}>
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3 dark:text-white">{feature.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
                     {feature.description}
                   </p>
                 </div>
@@ -244,82 +254,82 @@ function LandingPage() {
           </div>
         </div>
 
-
+        {/* Popular Courses section - improved light mode styling */}
         <div className="my-24">
-          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">Popular Courses</h3>
+          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">Popular Courses</h3>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
-              <div className="h-48 bg-indigo-200 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-indigo-600" />
+            {/* Course 1 */}
+            <div className={`${isDarkMode ? 'dark:bg-gray-700' : 'bg-white shadow-lg'} rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300`}>
+              <div className="h-48 bg-indigo-200 flex items-center justify-center dark:bg-indigo-900">
+                <BookOpen className="h-16 w-16 text-indigo-600 dark:text-indigo-300" />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Mathematics</span>
-                  <span className="text-sm font-medium text-gray-600">4.9 ★</span>
+                  <span className={`text-xs font-medium text-indigo-600 ${isDarkMode ? 'dark:bg-indigo-800 dark:text-indigo-300' : 'bg-indigo-100'} px-3 py-1 rounded-full`}>Mathematics</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">4.9 ★</span>
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Advanced Calculus</h4>
-                <p className="text-gray-600 text-sm mb-4">Master derivatives, integrals, and applications with our comprehensive course.</p>
+                <h4 className="text-lg font-semibold mb-2 dark:text-white">Advanced Calculus</h4>
+                <p className="text-gray-600 text-sm mb-4 dark:text-gray-300">Master derivatives, integrals, and applications with our comprehensive course.</p>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-indigo-600">12 Weeks</span>
-                  <Link to="/course/calculus" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Details →</Link>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-300">12 Weeks</span>
+                  <Link to="/course/calculus" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium dark:text-indigo-300 dark:hover:text-indigo-400">View Details →</Link>
                 </div>
               </div>
             </div>
             
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
-              <div className="h-48 bg-green-200 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-green-600" />
+            {/* Course 2 */}
+            <div className={`${isDarkMode ? 'dark:bg-gray-700' : 'bg-white shadow-lg'} rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300`}>
+              <div className="h-48 bg-green-200 flex items-center justify-center dark:bg-green-900">
+                <BookOpen className="h-16 w-16 text-green-600 dark:text-green-300" />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">Physics</span>
-                  <span className="text-sm font-medium text-gray-600">4.8 ★</span>
+                  <span className={`text-xs font-medium text-green-600 ${isDarkMode ? 'dark:text-green-300 dark:bg-green-800' : 'bg-green-100'} px-3 py-1 rounded-full`}>Physics</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">4.8 ★</span>
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Mechanics & Dynamics</h4>
-                <p className="text-gray-600 text-sm mb-4">Understand the fundamental principles of motion, forces, and energy.</p>
+                <h4 className="text-lg font-semibold mb-2 dark:text-white">Mechanics & Dynamics</h4>
+                <p className="text-gray-600 text-sm mb-4 dark:text-gray-300">Understand the fundamental principles of motion, forces, and energy.</p>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-green-600">10 Weeks</span>
-                  <Link to="/course/physics" className="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</Link>
+                  <span className="font-bold text-green-600 dark:text-green-300">10 Weeks</span>
+                  <Link to="/course/physics" className="text-green-600 hover:text-green-800 text-sm font-medium dark:text-green-300 dark:hover:text-green-400">View Details →</Link>
                 </div>
               </div>
             </div>
             
-
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
-              <div className="h-48 bg-purple-200 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-purple-600" />
+            {/* Course 3 */}
+            <div className={`${isDarkMode ? 'dark:bg-gray-700' : 'bg-white shadow-lg'} rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300`}>
+              <div className="h-48 bg-purple-200 flex items-center justify-center dark:bg-purple-900">
+                <BookOpen className="h-16 w-16 text-purple-600 dark:text-purple-300" />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Chemistry</span>
-                  <span className="text-sm font-medium text-gray-600">4.7 ★</span>
+                  <span className={`text-xs font-medium text-purple-600 ${isDarkMode ? 'dark:text-purple-300 dark:bg-purple-800' : 'bg-purple-100'} px-3 py-1 rounded-full`}>Chemistry</span>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">4.7 ★</span>
                 </div>
-                <h4 className="text-lg font-semibold mb-2">Organic Chemistry</h4>
-                <p className="text-gray-600 text-sm mb-4">Explore carbon compounds, reactions, and laboratory techniques.</p>
+                <h4 className="text-lg font-semibold mb-2 dark:text-white">Organic Chemistry</h4>
+                <p className="text-gray-600 text-sm mb-4 dark:text-gray-300">Explore carbon compounds, reactions, and laboratory techniques.</p>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-purple-600">14 Weeks</span>
-                  <Link to="/course/chemistry" className="text-purple-600 hover:text-purple-800 text-sm font-medium">View Details →</Link>
+                  <span className="font-bold text-purple-600 dark:text-purple-300">14 Weeks</span>
+                  <Link to="/course/chemistry" className="text-purple-600 hover:text-purple-800 text-sm font-medium dark:text-purple-300 dark:hover:text-purple-400">View Details →</Link>
                 </div>
               </div>
             </div>
           </div>
           
           <div className="mt-10 text-center">
-            <Link to="/courses" className="inline-flex items-center justify-center px-6 py-3 border border-indigo-600 text-base font-medium rounded-md text-indigo-600 hover:bg-indigo-50">
+            <Link to="/courses" className={`inline-flex items-center justify-center px-6 py-3 border ${isDarkMode ? 'dark:text-white dark:border-indigo-300 dark:hover:bg-indigo-700' : 'border-indigo-600 text-indigo-600 hover:bg-indigo-50'} text-base font-medium rounded-md`}>
               View All Courses
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
         </div>
 
-
-        <div className="my-24 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl shadow-sm p-8">
-          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">Student Success Stories</h3>
+        {/* Testimonials section - improved light mode styling */}
+        <div className={`my-24 ${isDarkMode ? 'dark:from-gray-700 dark:to-gray-700' : 'from-indigo-50 to-blue-50'} bg-gradient-to-r rounded-2xl shadow-md p-8`}>
+          <h3 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">Student Success Stories</h3>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-
-            <div className="bg-white rounded-xl p-8 shadow-sm">
+            {/* Testimonial 1 */}
+            <div className={`${isDarkMode ? 'dark:bg-gray-800' : 'bg-white shadow-lg'} rounded-xl p-8`}>
               <div className="flex flex-col h-full">
                 <div className="flex-1">
                   <div className="flex items-center mb-4">
@@ -329,22 +339,22 @@ function LandingPage() {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-gray-700 italic mb-6">"EduCoach helped me improve my math scores from C to A+. The personalized attention and practice tests were exactly what I needed. My confidence has skyrocketed!"</p>
+                  <p className="text-gray-700 italic mb-6 dark:text-gray-300">"EduCoach helped me improve my math scores from C to A+. The personalized attention and practice tests were exactly what I needed. My confidence has skyrocketed!"</p>
                 </div>
                 <div className="flex items-center mt-4">
-                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-indigo-800 font-bold">AP</span>
+                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center dark:bg-indigo-800">
+                    <span className="text-indigo-800 font-bold dark:text-indigo-100">AP</span>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">Anisha Patel</p>
-                    <p className="text-sm text-gray-600">Mathematics Student</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Anisha Patel</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Mathematics Student</p>
                   </div>
                 </div>
               </div>
             </div>
             
-
-            <div className="bg-white rounded-xl p-8 shadow-sm">
+            {/* Testimonial 2 */}
+            <div className={`${isDarkMode ? 'dark:bg-gray-800' : 'bg-white shadow-lg'} rounded-xl p-8`}>
               <div className="flex flex-col h-full">
                 <div className="flex-1">
                   <div className="flex items-center mb-4">
@@ -354,15 +364,15 @@ function LandingPage() {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-gray-700 italic mb-6">"The study groups and interactive sessions made learning physics enjoyable. I got accepted to my dream university thanks to the preparation I received at EduCoach."</p>
+                  <p className="text-gray-700 italic mb-6 dark:text-gray-300">"The study groups and interactive sessions made learning physics enjoyable. I got accepted to my dream university thanks to the preparation I received at EduCoach."</p>
                 </div>
                 <div className="flex items-center mt-4">
-                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-indigo-800 font-bold">MK</span>
+                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center dark:bg-indigo-800">
+                    <span className="text-indigo-800 font-bold dark:text-indigo-100">MK</span>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">Michael Kim</p>
-                    <p className="text-sm text-gray-600">Physics Student</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Michael Kim</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Physics Student</p>
                   </div>
                 </div>
               </div>
@@ -370,7 +380,7 @@ function LandingPage() {
           </div>
         </div>
 
-
+        {/* CTA section */}
         <div className="bg-indigo-700 rounded-2xl p-12 text-center text-white mt-20">
           <h3 className="text-3xl font-bold mb-6">Ready to Transform Your Academic Journey?</h3>
           <p className="text-xl mb-8 max-w-2xl mx-auto">Join thousands of students who have achieved their academic goals with EduCoach.</p>
