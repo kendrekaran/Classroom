@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, User, LogOut, ChevronRight, BookmarkCheck, GraduationCap, FileText, Library, ArrowRight, Heart, Shield, Clock } from 'lucide-react';
+import { BookOpen, User, LogOut, ChevronRight, BookmarkCheck, GraduationCap, FileText, Library, ArrowRight, Heart, Shield, Clock, Plus } from 'lucide-react';
 
 const teacherFeatures = [
   {
@@ -198,11 +198,11 @@ function TeacherLandingPage() {
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
               {isLoggedIn ? (
                 <Link 
-                  to="/teacher/dashboard" 
+                  to="/teacher/batches/create" 
                   className="inline-flex items-center bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg font-medium text-lg group hover:scale-105"
                 >
-                  <span>Access Dashboard</span>
-                  <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <span>Create Batch</span>
+                  <Plus className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               ) : (
                 <>

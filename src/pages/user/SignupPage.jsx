@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Lock } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import axios from 'axios';
 import { z } from 'zod';
 
@@ -54,82 +54,114 @@ function UserSignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex items-center text-indigo-600 hover:text-indigo-500 mb-6">
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          <span className="font-medium">Back to home</span>
-        </Link>
-        <h2 className="text-center text-4xl font-extrabold text-gray-900 mb-2">Create your account</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an Account?{' '}
-          <Link to="/student/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Log in
-          </Link>
-        </p>
-      </div>
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl rounded-2xl sm:px-10">
-          {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
+        {/* Header with gradient */}
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6">
+          <div className="flex justify-center">
+            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-md">
+              <UserPlus className="h-8 w-8 text-indigo-600" />
+            </div>
+          </div>
+          <h1 className="mt-4 text-2xl font-bold text-white text-center">
+            Create Your Account
+          </h1>
+          <p className="text-indigo-100 text-center mt-1">
+            Join our learning platform
+          </p>
+        </div>
+
+        {/* Signup Form */}
+        <div className="p-8">
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
               <input
                 id="name"
-                name="name"
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter your full name"
               />
             </div>
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Your Email Address
+              </label>
               <input
                 id="email"
-                name="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter your email"
               />
             </div>
+
             <div>
-              <label htmlFor="parentEmail" className="block text-sm font-medium text-gray-700">Parent's Email Address</label>
+              <label htmlFor="parentEmail" className="block text-sm font-medium text-gray-700">
+                Parent's Email Address
+              </label>
               <input
                 id="parentEmail"
-                name="parentEmail"
                 type="email"
                 required
                 value={parentEmail}
                 onChange={(e) => setParentEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter parent's email"
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
               <input
                 id="password"
-                name="password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Create a password"
               />
             </div>
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-3 px-4 rounded-xl shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-              >
-                {loading ? 'Signing up...' : 'Sign up'}
-              </button>
-            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 ${
+                loading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
           </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link
+                to="/user/login"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
