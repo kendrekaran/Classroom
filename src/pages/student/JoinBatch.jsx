@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, AlertCircle } from 'lucide-react';
 import axios from 'axios';
@@ -11,6 +11,13 @@ function JoinBatch() {
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            navigate('/student/login');
+        }
+    }, [navigate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -18,34 +25,41 @@ function JoinBatch() {
         setSuccess('');
 
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError('Please log in first');
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                navigate('/student/login');
                 return;
             }
 
-            const response = await axios.post(
-                'http://localhost:3000/user/join-batch',
-                { batch_code: batchCode },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+            // Parse the stored data and send token directly
+            const { token } = JSON.parse(userData);
+            
+            console.log('Using token:', token); // Debug log
+
+            const response = await axios({
+                method: 'POST',
+                url: 'http://localhost:3000/user/join-batch',
+                data: { batch_code: batchCode.trim() },
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            );
+            });
+
+            console.log('Join response:', response.data); // Debug log
 
             if (response.data.success) {
                 setSuccess('Successfully joined the batch!');
-                setTimeout(() => {
-                    navigate('/student/batches');
-                }, 2000);
+                setTimeout(() => navigate('/student/batches'), 2000);
             }
         } catch (error) {
-            setError(
-                error.response?.data?.message || 
-                'Failed to join batch. Please check the batch code.'
-            );
+            console.error('Join batch error:', error.response || error);
+            if (error.response?.status === 401) {
+                setError('Session expired. Please login again.');
+                setTimeout(() => navigate('/student/login'), 2000);
+            } else {
+                setError(error.response?.data?.message || 'Failed to join batch');
+            }
         } finally {
             setLoading(false);
         }
@@ -56,7 +70,7 @@ function JoinBatch() {
             <StudentNavbar />
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
-                    {/* Header */}
+                    {/* Header Section */}
                     <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-8">
                         <div className="flex justify-center mb-4">
                             <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-md">
@@ -88,10 +102,7 @@ function JoinBatch() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <label 
-                                    htmlFor="batchCode" 
-                                    className="block text-sm font-medium text-gray-700 mb-1"
-                                >
+                                <label htmlFor="batchCode" className="block text-sm font-medium text-gray-700 mb-1">
                                     Batch Code
                                 </label>
                                 <input
@@ -100,35 +111,32 @@ function JoinBatch() {
                                     value={batchCode}
                                     onChange={(e) => setBatchCode(e.target.value.toUpperCase())}
                                     placeholder="Enter batch code (e.g., BATCH001)"
-                                    className="w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                                    loading ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                            >
-                                {loading ? 'Joining...' : 'Join Batch'}
-                            </button>
+                            <div className="space-y-3">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                                        loading ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                >
+                                    {loading ? 'Joining...' : 'Join Batch'}
+                                </button>
 
-                            <button
-                                type="button"
-                                onClick={() => navigate(-1)}
-                                className="w-full py-3 px-4 border rounded-lg text-gray-700 hover:bg-gray-50"
-                            >
-                                Cancel
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/student/batches')}
+                                    className="w-full py-3 px-4 border rounded-lg text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </form>
-
-                        <div className="mt-6">
-                            <p className="text-sm text-gray-500 text-center">
-                                Don't have a batch code? Contact your teacher to get one.
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>

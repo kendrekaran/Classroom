@@ -3,20 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, LogOut } from 'lucide-react';
 
 function StudentNavbar() {
-    const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) {
+            navigate('/student/login');
+            return;
         }
-    }, []);
+
+        const user = JSON.parse(storedUser);
+        if (user.role !== 'student') {
+            localStorage.removeItem('user');
+            navigate('/student/login');
+            return;
+        }
+
+        setUserData(user);
+    }, [navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/');
+        navigate('/student/login');
     };
 
     return (
@@ -38,7 +47,7 @@ function StudentNavbar() {
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        <span className="text-gray-700">{user?.name}</span>
+                        <span className="text-gray-700">{userData?.name}</span>
                         <button
                             onClick={handleLogout}
                             className="text-red-500 hover:text-red-600 flex items-center space-x-1"

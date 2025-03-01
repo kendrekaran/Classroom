@@ -6,29 +6,26 @@ import TeacherNavbar from '../../components/TeacherNavbar';
 
 function BatchCreation() {
     const [formData, setFormData] = useState({
+        name: '', // Add name field
         batch_code: '',
+        class: '', // Add class field
         teacher_id: ''
     });
-    const [availableTeachers, setAvailableTeachers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchTeachers();
-    }, []);
-
-    const fetchTeachers = async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/admin/teachers');
-            if (response.data?.success) {
-                setAvailableTeachers(response.data.teachers);
-            }
-        } catch (error) {
-            setError('Failed to fetch teachers: ' + (error.response?.data?.message || error.message));
+        const teacherData = localStorage.getItem('teacherUser');
+        if (teacherData) {
+            const teacher = JSON.parse(teacherData);
+            setFormData(prev => ({
+                ...prev,
+                teacher_id: teacher.id
+            }));
         }
-    };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,11 +34,18 @@ function BatchCreation() {
         setSuccess('');
 
         try {
+            const teacherData = localStorage.getItem('teacherUser');
+            if (!teacherData) {
+                throw new Error('Teacher authentication required');
+            }
+
+            const { token } = JSON.parse(teacherData);
             const response = await axios.post(
                 'http://localhost:3000/admin/batches',
                 formData,
                 {
                     headers: {
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 }
@@ -52,32 +56,27 @@ function BatchCreation() {
                 setTimeout(() => navigate('/teacher/batches'), 2000);
             }
         } catch (error) {
+            console.error('Batch creation error:', error);
             setError(error.response?.data?.message || 'Failed to create batch');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     return (
-        <div>
+        <div className="min-h-screen bg-gray-50">
             <TeacherNavbar />
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="w-full px-4 sm:px-6 md:px-8 py-8">
                 <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <div className="bg-red-600 px-6 py-4">
+                    <div className="bg-red-600 px-6 py-6">
                         <div className="flex justify-center mb-4">
                             <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-md">
                                 <User className="h-8 w-8 text-red-600" />
                             </div>
                         </div>
-                        <h1 className="text-2xl font-bold text-white text-center">Create New Batch</h1>
+                        <h1 className="text-2xl font-bold text-white text-center">
+                            Create New Batch
+                        </h1>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -93,47 +92,64 @@ function BatchCreation() {
                             </div>
                         )}
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Batch Code
-                                </label>
-                                <input
-                                    type="text"
-                                    name="batch_code"
-                                    value={formData.batch_code}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="Enter unique batch code (e.g., BATCH001)"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Batch Name
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    name: e.target.value
+                                }))}
+                                required
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                                placeholder="Enter batch name"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Select Teacher
-                                </label>
-                                <select
-                                    name="teacher_id"
-                                    value={formData.teacher_id}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
-                                >
-                                    <option value="">Select a teacher</option>
-                                    {availableTeachers.map(teacher => (
-                                        <option key={teacher._id} value={teacher._id}>
-                                            {teacher.name} ({teacher.email})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Batch Code
+                            </label>
+                            <input
+                                type="text"
+                                name="batch_code"
+                                value={formData.batch_code}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    batch_code: e.target.value.toUpperCase()
+                                }))}
+                                required
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                                placeholder="Enter batch code (e.g., BATCH001)"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Class
+                            </label>
+                            <input
+                                type="text"
+                                name="class"
+                                value={formData.class}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    class: e.target.value
+                                }))}
+                                required
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                                placeholder="Enter class name"
+                            />
                         </div>
 
                         <div className="flex justify-end space-x-4 pt-4">
                             <button
                                 type="button"
-                                onClick={() => navigate(-1)}
+                                onClick={() => navigate('/teacher/batches')}
                                 className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
                             >
                                 Cancel

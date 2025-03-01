@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { User } from 'lucide-react';
 import axios from 'axios';
-import { z } from 'zod';
 
-const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(1, "Password is required"),
-  type: z.literal('student')
-});
 
 function UserLoginPage() {
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,32 +15,31 @@ function UserLoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-    
+    setError('');
+
     try {
-      loginSchema.parse({ email, password, type: 'student' });
-      
       const response = await axios.post('http://localhost:3000/user/login/student', {
         email,
-        password,
-        type: 'student'
+        password
       });
-      
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      navigate('/');
-    } catch (error) {
-      if (error.errors) {
-        setError(error.errors[0].message);
-      } else if (error.response) {
-        setError(error.response.data.message || 'Student login failed');
-      } else if (error.request) {
-        setError('Unable to connect to server. Please try again later.');
+
+      if (response.data.success) {
+        const userData = {
+          token: response.data.token,
+          id: response.data.user.id,
+          name: response.data.user.name,
+          email: response.data.user.email,
+          role: 'student'
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        navigate('/student/batches');
       } else {
-        setError('Something went wrong. Please try again.');
+        throw new Error(response.data.message || 'Login failed');
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -68,6 +63,11 @@ function UserLoginPage() {
         
         {/* Login Form */}
         <div className="p-8">
+          {successMessage && (
+            <div className="mb-6 p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+              {successMessage}
+            </div>
+          )}
           {error && (
             <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
               {error}

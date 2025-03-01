@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { ArrowRight, LogOut, User, BookOpen, Award, Clock, Users, MessageSquare, Zap } from "lucide-react"
+import { Link } from "react-router-dom"
+import { ArrowRight,  BookOpen, Award, Clock, Users, MessageSquare, Zap } from "lucide-react"
+import StudentNavbar from "../components/StudentNavbar";
 
 const features = [
   {
@@ -38,7 +39,6 @@ const features = [
 function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -50,81 +50,12 @@ function LandingPage() {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('rememberMe');
-    setIsLoggedIn(false);
-    setUser(null);
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar - Simplified and cleaner */}
-      <nav className="bg-white shadow-md sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <BookOpen className="h-8 w-8 text-indigo-600" />
-          <span className="text-2xl font-bold text-gray-900">EduCoach</span>
-        </Link>
+      <StudentNavbar />
 
-        <div className="hidden md:flex items-center space-x-8">
-          {['Courses', 'Teachers', 'Resources', 'FAQs'].map(item => (
-            <Link
-          key={item}
-          to={`/${item.toLowerCase()}`}
-          className="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium"
-            >
-          {item}
-            </Link>
-          ))}
-        </div>
 
-        <div className="flex items-center space-x-4">
-          {isLoggedIn ? (
-            <div className="flex items-center space-x-4">
-          <span className="text-gray-700 text-sm font-medium">Hello, {user?.name}</span>
-          <Link
-            to="/dashboard"
-            className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition-colors duration-200 text-sm font-medium"
-          >
-            Dashboard
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="text-red-500 hover:text-red-600 flex items-center space-x-1 text-sm font-medium"
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Logout</span>
-          </button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-4">
-          <Link to="/teacher" className="text-gray-600 hover:text-indigo-600 text-sm font-medium">
-            Teachers Login
-          </Link>
-          <Link
-            to="/user/login"
-            className="text-gray-600 hover:text-indigo-600 text-sm font-medium"
-          >
-            Login
-          </Link>
-          <Link
-            to="/user/signup"
-            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium"
-          >
-            Get Started
-          </Link>
-            </div>
-          )}
-        </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section - Enhanced with gradient */}
       <div className="relative bg-gradient-to-r from-indigo-600 to-indigo-800 text-white">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 to-indigo-700 opacity-90"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
@@ -170,7 +101,7 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* Stats Section - Cleaner design */}
+
       <div className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
@@ -187,7 +118,7 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* Features Section - Enhanced cards */}
+
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Why Choose EduCoach?</h2>
@@ -210,7 +141,7 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* Popular Courses section - improved light mode styling */}
+
       <div className="my-24">
         <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">Popular Courses</h3>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">

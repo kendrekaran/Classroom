@@ -35,9 +35,12 @@ function UserSignupPage() {
         parentEmail,
         password
       });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/');
+      
+      navigate('/user/login', { 
+        state: { 
+          message: 'Registration successful! Please login with your credentials.' 
+        }
+      });
     } catch (error) {
       if (error.errors) {
         setError(error.errors[0].message);

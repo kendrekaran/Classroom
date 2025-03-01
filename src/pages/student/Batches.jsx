@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, BookOpen, Users, Calendar, Search } from 'lucide-react';
 import axios from 'axios';
 import StudentNavbar from '../../components/StudentNavbar';
@@ -9,39 +9,58 @@ function StudentBatches() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            navigate('/student/login');
+            return;
+        }
         fetchBatches();
-    }, []);
+    }, [navigate]);
 
     const fetchBatches = async () => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError('Authentication required');
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                navigate('/student/login');
                 return;
             }
 
-            const response = await axios.get('http://localhost:3000/user/my-batches', {
+            const { id: student_id, token } = JSON.parse(userData);
+            const response = await axios({
+                method: 'GET',
+                url: `http://localhost:3000/user/my-batches`,
+                params: { student_id },
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
 
+            console.log('Batches response:', response.data); // Debug log
+
             if (response.data.success) {
-                setBatches(response.data.batches);
+                setBatches(response.data.batches || []);
             }
         } catch (error) {
-            setError(error.response?.data?.message || 'Failed to fetch batches');
+            console.error('Error fetching batches:', error);
+            setError('Failed to fetch batches');
         } finally {
             setLoading(false);
         }
     };
 
-    const filteredBatches = batches.filter(batch => 
-        batch.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        batch.teacher?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredBatches = batches.filter(batch => {
+        if (!batch) return false;
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            batch.batch_code?.toLowerCase().includes(searchLower) ||
+            batch.name?.toLowerCase().includes(searchLower) ||
+            batch.teacher?.name?.toLowerCase().includes(searchLower)
+        );
+    });
 
     if (loading) {
         return (
@@ -101,15 +120,18 @@ function StudentBatches() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredBatches.map(batch => (
                             <div
-                                key={batch.code}
+                                key={batch._id}
                                 className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                             >
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-900">
-                                                {batch.code}
+                                                {batch.name || 'Unnamed Batch'}
                                             </h3>
+                                            <p className="text-sm text-gray-500">
+                                                Code: {batch.batch_code}
+                                            </p>
                                             <p className="text-sm text-gray-500 mt-1">
                                                 Teacher: {batch.teacher?.name || 'Not assigned'}
                                             </p>
@@ -122,11 +144,11 @@ function StudentBatches() {
                                     <div className="space-y-2">
                                         <div className="flex items-center text-sm text-gray-500">
                                             <Users className="h-4 w-4 mr-2" />
-                                            {batch.totalStudents} Students
+                                            {batch.studentsCount || 0} Students
                                         </div>
                                         <div className="flex items-center text-sm text-gray-500">
                                             <Calendar className="h-4 w-4 mr-2" />
-                                            {new Date(batch.details?.createdAt).toLocaleDateString()}
+                                            {new Date(batch.createdAt).toLocaleDateString()}
                                         </div>
                                     </div>
 
