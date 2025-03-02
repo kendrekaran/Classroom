@@ -39,10 +39,13 @@ function StudentBatches() {
                 }
             });
 
-            console.log('Batches response:', response.data); // Debug log
+            console.log('Raw batch data:', response.data.batches); // Debug log
 
             if (response.data.success) {
-                setBatches(response.data.batches || []);
+                setBatches(response.data.batches.map(batch => ({
+                    ...batch,
+                    id: batch._id // Ensure _id is accessible as id
+                })));
             }
         } catch (error) {
             console.error('Error fetching batches:', error);
@@ -154,11 +157,11 @@ function StudentBatches() {
 
                                     <div className="mt-6">
                                         <Link
-                                            to={`/student/batches/${batch.code}`}
+                                            to={`/student/batches/${batch._id}`}
                                             className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
                                         >
                                             <BookOpen className="h-4 w-4 mr-1" />
-                                            View Materials
+                                            View Batch Details
                                         </Link>
                                     </div>
                                 </div>

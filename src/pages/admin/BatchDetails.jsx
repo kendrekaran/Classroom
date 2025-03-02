@@ -3,11 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, Calendar, BookOpen, ArrowLeft, Mail, User } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
+import AnnouncementForm from '../../components/AnnouncementForm';
 
 function BatchDetails() {
     const [batch, setBatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [announcements, setAnnouncements] = useState([]);
     const { batchId } = useParams();
     const navigate = useNavigate();
 
@@ -43,6 +45,39 @@ function BatchDetails() {
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const teacherData = localStorage.getItem('teacherUser');
+                if (!teacherData) {
+                    navigate('/teacher/login');
+                    return;
+                }
+
+                const { token } = JSON.parse(teacherData);
+                const response = await axios.get(
+                    `http://localhost:3000/admin/batches/${batchId}/announcements`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+                if (response.data.success) {
+                    setAnnouncements(response.data.announcements);
+                }
+            } catch (error) {
+                console.error('Error fetching announcements:', error);
+            }
+        };
+
+        fetchAnnouncements();
+    }, [batchId]);
+
+    const handleAnnouncementCreated = (newAnnouncement) => {
+        setAnnouncements([newAnnouncement, ...announcements]);
     };
 
     if (loading) {
@@ -212,6 +247,35 @@ function BatchDetails() {
                             <p className="mt-1 text-sm text-gray-500">Start by adding students to this batch.</p>
                         </div>
                     )}
+                </div>
+
+                {/* Announcements */}
+                <div className="mt-8">
+                    <h2 className="text-2xl font-bold mb-4">Announcements</h2>
+                    <AnnouncementForm 
+                        batchId={batchId} 
+                        onAnnouncementCreated={handleAnnouncementCreated}
+                    />
+                    
+                    <div className="mt-6 space-y-4">
+                        {announcements.map((announcement) => (
+                            <div 
+                                key={announcement._id} 
+                                className="bg-white p-4 rounded-lg shadow-sm"
+                            >
+                                <h3 className="text-lg font-medium text-gray-900">
+                                    {announcement.title}
+                                </h3>
+                                <p className="mt-1 text-gray-600">
+                                    {announcement.content}
+                                </p>
+                                <div className="mt-2 text-sm text-gray-500">
+                                    Posted by {announcement.teacher_id.name} on{' '}
+                                    {new Date(announcement.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

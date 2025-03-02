@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut } from 'lucide-react';
+import { BookOpen, LogOut, User2Icon } from 'lucide-react';
 
 function StudentNavbar() {
     const navigate = useNavigate();
@@ -8,24 +8,21 @@ function StudentNavbar() {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
-        if (!storedUser) {
-            navigate('/student/login');
-            return;
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                if (parsedUser.token && parsedUser.name && parsedUser.role) {
+                    setUserData(parsedUser);
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
         }
-
-        const user = JSON.parse(storedUser);
-        if (user.role !== 'student') {
-            localStorage.removeItem('user');
-            navigate('/student/login');
-            return;
-        }
-
-        setUserData(user);
-    }, [navigate]);
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('user');
-        navigate('/student/login');
+        navigate('/');
     };
 
     return (
@@ -37,24 +34,44 @@ function StudentNavbar() {
                         <span className="text-2xl font-bold text-gray-900">EduCoach</span>
                     </Link>
 
-                    <div className="hidden md:flex items-center space-x-8">
-                        <Link to="/student/batches" className="text-gray-600 hover:text-indigo-600 transition-colors duration-200">
-                            My Batches
-                        </Link>
-                        <Link to="/student/materials" className="text-gray-600 hover:text-indigo-600 transition-colors duration-200">
-                            Materials
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <span className="text-gray-700">{userData?.name}</span>
-                        <button
-                            onClick={handleLogout}
-                            className="text-red-500 hover:text-red-600 flex items-center space-x-1"
-                        >
-                            <LogOut className="h-5 w-5" />
-                            <span>Logout</span>
-                        </button>
+                    <div className="hidden md:flex items-center space-x-4">
+                        {userData ? (
+                            // Show for logged in users
+                            <>
+                                <Link to="/student/batches" className="text-gray-600 hover:text-indigo-600">
+                                    My Batches
+                                </Link>
+                                <Link to="/student/join-batch" className="text-gray-600 hover:text-indigo-600">
+                                    Join Batch
+                                </Link>
+                                <div className="flex items-center space-x-4 ml-4 border-l pl-4">
+                                    <span className="text-gray-700 flex items-center justify-center gap-1.5"><User2Icon className='h-5 w-5'/> {userData.name}</span>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="text-red-500 hover:text-red-600 flex items-center space-x-1"
+                                    >
+                                        <LogOut className="h-5 w-5" />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            // Show for non-logged in users
+                            <>
+                                <Link to="/user/login" className="text-gray-600 hover:text-indigo-600">
+                                    Login
+                                </Link>
+                                <Link to="/user/signup" className="text-gray-600 hover:text-indigo-600">
+                                    Sign Up
+                                </Link>
+                                <Link
+                                    to="/teacher"
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                                >
+                                    Teacher Portal
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

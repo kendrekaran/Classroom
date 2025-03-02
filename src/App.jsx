@@ -14,6 +14,7 @@ import UserLoginComponent from './pages/UserLogin';
 import StudentBatches from './pages/student/Batches';
 import ParentDashboard from './pages/parent/Dashboard';
 import BatchDetails from './pages/admin/BatchDetails';
+import StudentBatchDetail from './pages/student/BatchDetail';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/teacher/batches/:batchId" element={<BatchDetails />} />
         <Route path="/student/join-batch" element={<JoinBatch />} />
         <Route path="/student/batches" element={<StudentBatches />} />
+        <Route path="/student/batches/:batchId" element={<StudentBatchDetail />} />
       </Routes>
     </Router>
   );
