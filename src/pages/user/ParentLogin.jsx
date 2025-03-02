@@ -32,7 +32,6 @@ function ParentLoginPage() {
                     role: 'parent',
                     linkedStudents: response.data.linkedStudents
                 };
-                // Changed from parentUser to parentData to match Dashboard usage
                 localStorage.setItem('parentData', JSON.stringify(parentData));
                 navigate('/parent/dashboard');
             } else {

@@ -15,6 +15,7 @@ import StudentBatches from './pages/student/Batches';
 import ParentDashboard from './pages/parent/Dashboard';
 import BatchDetails from './pages/admin/BatchDetails';
 import StudentBatchDetail from './pages/student/BatchDetail';
+import ParentBatchDetail from './pages/parent/BatchDetail';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/parent/login" element={<ParentLoginPage />} />
         <Route path="/parent/dashboard" element={<ParentDashboard />} />
+        <Route path="/parent/batches/:batchId" element={<ParentBatchDetail />} />
         <Route path="/student/login" element={<UserLoginPage />} />
         <Route path="/user/signup" element={<UserSignupPage />} />
         <Route path="/user/login" element={<UserLoginComponent />} />
