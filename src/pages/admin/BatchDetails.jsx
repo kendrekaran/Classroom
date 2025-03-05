@@ -4,6 +4,7 @@ import { Users, Calendar, BookOpen, ArrowLeft, Mail, User } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import AnnouncementForm from '../../components/AnnouncementForm';
+import AttendanceMarker from '../../components/AttendanceMarker';
 
 function BatchDetails() {
     const [batch, setBatch] = useState(null);
@@ -276,6 +277,10 @@ function BatchDetails() {
                             </div>
                         ))}
                     </div>
+                </div>
+
+                <div className="mt-8">
+                    <AttendanceMarker batchId={batchId} students={batch.students} />
                 </div>
             </div>
         </div>

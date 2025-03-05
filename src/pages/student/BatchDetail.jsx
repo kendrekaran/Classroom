@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, Calendar, BookOpen, ArrowLeft, Mail, User } from 'lucide-react';
 import axios from 'axios';
 import StudentNavbar from '../../components/StudentNavbar';
+import StudentAttendance from '../../components/StudentAttendance';
 
 function StudentBatchDetail() {
     const [batch, setBatch] = useState(null);
@@ -169,6 +170,11 @@ function StudentBatchDetail() {
                             <p className="text-gray-500">No announcements yet</p>
                         )}
                     </div>
+                </div>
+
+                {/* Add this section for attendance */}
+                <div className="mt-8">
+                    <StudentAttendance batchId={batchId} />
                 </div>
             </div>
         </div>
