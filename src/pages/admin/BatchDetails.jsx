@@ -5,6 +5,7 @@ import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import AnnouncementForm from '../../components/AnnouncementForm';
 import AttendanceMarker from '../../components/AttendanceMarker';
+import StudentAttendanceDetails from '../../components/StudentAttendanceDetails';
 
 function BatchDetails() {
     const [batch, setBatch] = useState(null);
@@ -13,6 +14,7 @@ function BatchDetails() {
     const [announcements, setAnnouncements] = useState([]);
     const { batchId } = useParams();
     const navigate = useNavigate();
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     useEffect(() => {
         fetchBatchDetails();
@@ -202,14 +204,14 @@ function BatchDetails() {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Name
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Email
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Actions
                                         </th>
                                     </tr>
                                 </thead>
@@ -232,9 +234,12 @@ function BatchDetails() {
                                                 <div className="text-sm text-gray-500">{student.email}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Active
-                                                </span>
+                                                <button
+                                                    onClick={() => setSelectedStudent(student)}
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                >
+                                                    View Attendance
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -249,6 +254,27 @@ function BatchDetails() {
                         </div>
                     )}
                 </div>
+
+                {/* Show selected student's attendance */}
+                {selectedStudent && (
+                    <div className="mt-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-900">
+                                Attendance Record - {selectedStudent.name}
+                            </h2>
+                            <button
+                                onClick={() => setSelectedStudent(null)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <StudentAttendanceDetails
+                            batchId={batchId}
+                            student={selectedStudent}
+                        />
+                    </div>
+                )}
 
                 {/* Announcements */}
                 <div className="mt-8">
