@@ -4,6 +4,7 @@ import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, ClipboardCheck, Bell 
 import axios from 'axios';
 import ParentNavbar from '../../components/ParentNavbar';
 import ParentAttendanceView from '../../components/ParentAttendanceView';
+import TimetableViewer from '../../components/TimetableViewer';
 
 function ParentBatchDetail() {
     const [batch, setBatch] = useState(null);
@@ -189,10 +190,43 @@ function ParentBatchDetail() {
                     </div>
                 );
 
+            case 'timetable':
+                return (
+                    <div className="space-y-6">
+                        <TimetableViewer batchId={batchId} userType="parent" />
+                    </div>
+                );
+
             default:
                 return null;
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-xl font-semibold text-gray-900">Error</h2>
+                    <p className="mt-2 text-gray-600">{error}</p>
+                    <Link
+                        to="/parent/dashboard"
+                        className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -212,7 +246,8 @@ function ParentBatchDetail() {
                         {[
                             { id: 'overview', label: 'Overview', icon: BookOpen },
                             { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
-                            { id: 'announcements', label: 'Announcements', icon: Bell }
+                            { id: 'announcements', label: 'Announcements', icon: Bell },
+                            { id: 'timetable', label: 'Timetable', icon: Calendar }
                         ].map((tab) => (
                             <button
                                 key={tab.id}

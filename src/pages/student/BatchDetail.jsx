@@ -4,6 +4,7 @@ import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck 
 import axios from 'axios';
 import StudentNavbar from '../../components/StudentNavbar';
 import StudentAttendance from '../../components/StudentAttendance';
+import TimetableViewer from '../../components/TimetableViewer';
 
 function StudentBatchDetail() {
     const [batch, setBatch] = useState(null);
@@ -66,17 +67,17 @@ function StudentBatchDetail() {
                 return (
                     <div className="space-y-6">
                         {/* Teacher Information */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Teacher Information</h2>
+                        <div className="p-6 bg-white rounded-lg shadow-sm">
+                            <h2 className="mb-4 text-lg font-semibold text-gray-900">Teacher Information</h2>
                             {batch.teacher ? (
                                 <div className="flex items-center space-x-4">
-                                    <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                                        <User className="h-6 w-6 text-indigo-600" />
+                                    <div className="flex justify-center items-center w-12 h-12 bg-indigo-100 rounded-full">
+                                        <User className="w-6 h-6 text-indigo-600" />
                                     </div>
                                     <div>
-                                        <h3 className="text-md font-medium text-gray-900">{batch.teacher.name}</h3>
-                                        <div className="mt-1 flex items-center text-sm text-gray-500">
-                                            <Mail className="h-4 w-4 mr-1" />
+                                        <h3 className="font-medium text-gray-900 text-md">{batch.teacher.name}</h3>
+                                        <div className="flex items-center mt-1 text-sm text-gray-500">
+                                            <Mail className="mr-1 w-4 h-4" />
                                             {batch.teacher.email}
                                         </div>
                                     </div>
@@ -87,28 +88,28 @@ function StudentBatchDetail() {
                         </div>
 
                         {/* Batch Statistics */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white rounded-lg shadow-sm p-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div className="p-6 bg-white rounded-lg shadow-sm">
                                 <div className="flex items-center">
-                                    <Users className="h-10 w-10 text-indigo-600" />
+                                    <Users className="w-10 h-10 text-indigo-600" />
                                     <div className="ml-4">
                                         <h3 className="text-lg font-medium text-gray-900">Total Students</h3>
                                         <p className="text-3xl font-bold text-indigo-600">{batch.studentsCount}</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="p-6 bg-white rounded-lg shadow-sm">
                                 <div className="flex items-center">
-                                    <Bell className="h-10 w-10 text-green-600" />
+                                    <Bell className="w-10 h-10 text-green-600" />
                                     <div className="ml-4">
                                         <h3 className="text-lg font-medium text-gray-900">Announcements</h3>
                                         <p className="text-3xl font-bold text-green-600">{batch.announcements?.length || 0}</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="p-6 bg-white rounded-lg shadow-sm">
                                 <div className="flex items-center">
-                                    <Calendar className="h-10 w-10 text-purple-600" />
+                                    <Calendar className="w-10 h-10 text-purple-600" />
                                     <div className="ml-4">
                                         <h3 className="text-lg font-medium text-gray-900">Joined On</h3>
                                         <p className="text-lg text-purple-600">
@@ -124,7 +125,7 @@ function StudentBatchDetail() {
             case 'attendance':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-lg shadow-sm p-6">
+                        <div className="p-6 bg-white rounded-lg shadow-sm">
                             <StudentAttendance batchId={batchId} />
                         </div>
                     </div>
@@ -132,12 +133,12 @@ function StudentBatchDetail() {
 
             case 'announcements':
                 return (
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-lg font-semibold mb-4">Announcements</h2>
+                    <div className="p-6 bg-white rounded-lg shadow-sm">
+                        <h2 className="mb-4 text-lg font-semibold">Announcements</h2>
                         <div className="space-y-4">
                             {batch.announcements && batch.announcements.length > 0 ? (
                                 batch.announcements.map((announcement, index) => (
-                                    <div key={index} className="border-l-4 border-indigo-500 pl-4 py-2">
+                                    <div key={index} className="py-2 pl-4 border-l-4 border-indigo-500">
                                         <h3 className="font-medium text-gray-900">{announcement.title}</h3>
                                         <p className="mt-1 text-gray-600">{announcement.content}</p>
                                         <p className="mt-2 text-sm text-gray-500">
@@ -153,6 +154,13 @@ function StudentBatchDetail() {
                     </div>
                 );
 
+            case 'timetable':
+                return (
+                    <div className="space-y-6">
+                        <TimetableViewer batchId={batchId} />
+                    </div>
+                );
+
             default:
                 return null;
         }
@@ -160,23 +168,23 @@ function StudentBatchDetail() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="flex justify-center items-center min-h-screen bg-gray-50">
+                <div className="w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
             </div>
         );
     }
 
     if (error || !batch) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="flex justify-center items-center min-h-screen bg-gray-50">
                 <div className="text-center">
                     <h2 className="text-xl font-semibold text-gray-900">Error</h2>
                     <p className="mt-2 text-gray-600">{error || 'Batch not found'}</p>
                     <Link
                         to="/student/batches"
-                        className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800"
+                        className="inline-flex items-center mt-4 text-indigo-600 hover:text-indigo-800"
                     >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        <ArrowLeft className="mr-2 w-4 h-4" />
                         Back to My Batches
                     </Link>
                 </div>
@@ -187,25 +195,25 @@ function StudentBatchDetail() {
     return (
         <div className="min-h-screen bg-gray-50">
             <StudentNavbar />
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 {/* Back Button */}
                 <Link
                     to="/student/batches"
-                    className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-6"
+                    className="inline-flex items-center mb-6 text-indigo-600 hover:text-indigo-800"
                 >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    <ArrowLeft className="mr-2 w-4 h-4" />
                     Back to My Batches
                 </Link>
 
                 {/* Batch Header */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">{batch.name}</h1>
-                            <p className="text-sm text-gray-500 mt-1">Batch Code: {batch.batch_code}</p>
+                            <p className="mt-1 text-sm text-gray-500">Batch Code: {batch.batch_code}</p>
                         </div>
                         <div className="mt-4 md:mt-0">
-                            <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
                                 Active
                             </span>
                         </div>
@@ -218,7 +226,8 @@ function StudentBatchDetail() {
                         {[
                             { id: 'overview', label: 'Overview', icon: BookOpen },
                             { id: 'attendance', label: 'My Attendance', icon: ClipboardCheck },
-                            { id: 'announcements', label: 'Announcements', icon: Bell }
+                            { id: 'announcements', label: 'Announcements', icon: Bell },
+                            { id: 'timetable', label: 'Timetable', icon: Calendar }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -229,7 +238,7 @@ function StudentBatchDetail() {
                                         : 'text-gray-500 hover:text-gray-700'
                                 }`}
                             >
-                                <tab.icon className="h-5 w-5 mr-2" />
+                                <tab.icon className="mr-2 w-5 h-5" />
                                 {tab.label}
                             </button>
                         ))}
