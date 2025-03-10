@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Users, BookOpen,  Search,  RefreshCcw } from 'lucide-react';
+import { Plus, Users, BookOpen, Search, RefreshCcw, Trash2, AlertCircle, X } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 
@@ -11,6 +11,9 @@ function BatchesList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [currentTeacher, setCurrentTeacher] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         // Get teacher info from localStorage
@@ -23,6 +26,8 @@ function BatchesList() {
 
     const fetchBatches = async () => {
         try {
+            setLoading(true);
+            setError('');
             const response = await axios.get('http://localhost:3000/admin/batches');
             if (response.data?.success) {
                 // Filter batches to only show those created by the logged-in teacher
@@ -44,8 +49,83 @@ function BatchesList() {
         }
     };
 
+    const handleDeleteBatch = async (batchId) => {
+        try {
+            setDeleteLoading(true);
+            const teacherData = localStorage.getItem('teacherUser');
+            if (!teacherData) {
+                setError('Authentication required');
+                return;
+            }
+
+            const { token } = JSON.parse(teacherData);
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                // Remove the batch from state
+                setBatches(batches.filter(batch => batch._id !== batchId));
+                setSuccessMessage('Batch deleted successfully');
+                setTimeout(() => setSuccessMessage(''), 3000);
+            } else {
+                setError('Failed to delete batch: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting batch:', error);
+            setError(error.response?.data?.message || 'Failed to delete batch');
+        } finally {
+            setDeleteLoading(false);
+            setDeleteConfirm(null);
+        }
+    };
+
+    const handleUpdateBatchStatus = async (batchId, newStatus) => {
+        try {
+            setLoading(true);
+            const teacherData = localStorage.getItem('teacherUser');
+            if (!teacherData) {
+                setError('Authentication required');
+                return;
+            }
+
+            const { token } = JSON.parse(teacherData);
+            const response = await axios.patch(
+                `http://localhost:3000/admin/batches/${batchId}/status`,
+                { status: newStatus },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                // Update the batch status in state
+                setBatches(batches.map(batch => 
+                    batch._id === batchId ? { ...batch, status: newStatus } : batch
+                ));
+                setSuccessMessage(`Batch status updated to ${newStatus}`);
+                setTimeout(() => setSuccessMessage(''), 3000);
+            } else {
+                setError('Failed to update batch status: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Error updating batch status:', error);
+            setError(error.response?.data?.message || 'Failed to update batch status');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredBatches = batches.filter(batch => {
-        const matchesSearch = batch.batch_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            batch.batch_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             batch.teacher_id?.name?.toLowerCase().includes(searchTerm.toLowerCase());
         
         if (filter === 'all') return matchesSearch;
@@ -61,7 +141,7 @@ function BatchesList() {
         }
     };
 
-    if (loading) {
+    if (loading && batches.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -93,6 +173,16 @@ function BatchesList() {
                         </div>
                     </div>
 
+                    {/* Success Message */}
+                    {successMessage && (
+                        <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg flex justify-between items-center">
+                            <span>{successMessage}</span>
+                            <button onClick={() => setSuccessMessage('')} className="text-green-700">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
+
                     {/* Search and Filter */}
                     <div className="mb-6 flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 relative">
@@ -119,16 +209,20 @@ function BatchesList() {
                             <button
                                 onClick={fetchBatches}
                                 className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50"
+                                disabled={loading}
                             >
-                                <RefreshCcw className="h-5 w-5" />
+                                <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
                             </button>
                         </div>
                     </div>
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
-                            {error}
+                        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex justify-between items-center">
+                            <span>{error}</span>
+                            <button onClick={() => setError('')} className="text-red-700">
+                                <X className="h-5 w-5" />
+                            </button>
                         </div>
                     )}
 
@@ -167,19 +261,56 @@ function BatchesList() {
 
                                             <div className="mt-6 flex justify-between items-center">
                                                 <Link
-                                                    to={`/teacher/batches/${batch._id}`} // Update this line
+                                                    to={`/teacher/batches/${batch._id}`}
                                                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
                                                     View Details →
                                                 </Link>
-                                                <button
-                                                    onClick={() => {/* Add manage students handler */}}
-                                                    className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                                                >
-                                                    <Users className="h-4 w-4 mr-1" />
-                                                    Manage
-                                                </button>
+                                                <div className="flex space-x-2">
+                                                    <div className="relative">
+                                                        <select
+                                                            value={batch.status || 'active'}
+                                                            onChange={(e) => handleUpdateBatchStatus(batch._id, e.target.value)}
+                                                            className="text-sm border border-gray-300 rounded-md px-2 py-1"
+                                                        >
+                                                            <option value="active">Active</option>
+                                                            <option value="completed">Completed</option>
+                                                            <option value="cancelled">Cancelled</option>
+                                                        </select>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setDeleteConfirm(batch._id)}
+                                                        className="inline-flex items-center p-1 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            {/* Delete Confirmation */}
+                                            {deleteConfirm === batch._id && (
+                                                <div className="mt-4 p-3 bg-red-50 rounded-md">
+                                                    <p className="text-sm text-red-700 mb-2 flex items-center">
+                                                        <AlertCircle className="w-4 h-4 mr-1" />
+                                                        Delete this batch? This action cannot be undone.
+                                                    </p>
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => handleDeleteBatch(batch._id)}
+                                                            disabled={deleteLoading}
+                                                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                                                        >
+                                                            {deleteLoading ? 'Deleting...' : 'Confirm'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setDeleteConfirm(null)}
+                                                            className="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -190,16 +321,16 @@ function BatchesList() {
                                 <div className="text-center py-12">
                                     <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
                                     <h3 className="mt-2 text-sm font-medium text-gray-900">
-                                        {searchTerm 
+                                        {searchTerm || filter !== 'all'
                                             ? "No matching batches found" 
                                             : "You haven't created any batches yet"}
                                     </h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {searchTerm 
-                                            ? "Try adjusting your search" 
+                                        {searchTerm || filter !== 'all'
+                                            ? "Try adjusting your search or filter" 
                                             : "Create your first batch to get started"}
                                     </p>
-                                    {!searchTerm && (
+                                    {!searchTerm && filter === 'all' && (
                                         <div className="mt-6">
                                             <Link
                                                 to="/teacher/batches/create"

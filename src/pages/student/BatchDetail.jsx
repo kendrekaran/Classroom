@@ -44,7 +44,11 @@ function StudentBatchDetail() {
                 console.log('Batch details response:', response.data);
 
                 if (response.data.success) {
-                    setBatch(response.data.batch);
+                    const batchData = response.data.batch;
+                    if (!batchData.status) {
+                        batchData.status = 'active';
+                    }
+                    setBatch(batchData);
                 } else {
                     throw new Error(response.data.message || 'Failed to fetch batch details');
                 }
@@ -138,7 +142,7 @@ function StudentBatchDetail() {
                         <div className="space-y-4">
                             {batch.announcements && batch.announcements.length > 0 ? (
                                 batch.announcements.map((announcement, index) => (
-                                    <div key={index} className="py-2 pl-4 border-l-4 border-indigo-500">
+                                    <div key={announcement._id || index} className="py-4 pl-4 bg-gray-50 rounded-r-lg border-l-4 border-indigo-500">
                                         <h3 className="font-medium text-gray-900">{announcement.title}</h3>
                                         <p className="mt-1 text-gray-600">{announcement.content}</p>
                                         <p className="mt-2 text-sm text-gray-500">
@@ -148,7 +152,10 @@ function StudentBatchDetail() {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-500">No announcements yet</p>
+                                <div className="py-8 text-center">
+                                    <Bell className="mx-auto w-12 h-12 text-gray-300" />
+                                    <p className="mt-2 text-gray-500">No announcements yet</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -213,8 +220,13 @@ function StudentBatchDetail() {
                             <p className="mt-1 text-sm text-gray-500">Batch Code: {batch.batch_code}</p>
                         </div>
                         <div className="mt-4 md:mt-0">
-                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
-                                Active
+                            <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                                batch.status === 'active' ? 'bg-green-100 text-green-800' :
+                                batch.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                batch.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                            }`}>
+                                {batch.status ? batch.status.charAt(0).toUpperCase() + batch.status.slice(1) : 'Active'}
                             </span>
                         </div>
                     </div>

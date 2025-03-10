@@ -48,7 +48,12 @@ function ParentBatchDetail() {
                 );
 
                 if (response.data.success) {
-                    setBatch(response.data.batch);
+                    // Ensure batch has a status property, default to 'active' if not present
+                    const batchData = response.data.batch;
+                    if (!batchData.status) {
+                        batchData.status = 'active';
+                    }
+                    setBatch(batchData);
                 } else {
                     throw new Error(response.data.message);
                 }
@@ -118,8 +123,15 @@ function ParentBatchDetail() {
                                     <h1 className="text-2xl font-bold text-gray-900">{batch?.name}</h1>
                                     <p className="text-sm text-gray-500 mt-1">Batch Code: {batch?.batch_code}</p>
                                 </div>
-                                <span className="px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800">
-                                    Class {batch?.class}
+                                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                                    batch?.status === 'active' ? 'bg-green-100 text-green-800' :
+                                    batch?.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                    batch?.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                    'bg-indigo-100 text-indigo-800'
+                                }`}>
+                                    {batch?.status 
+                                        ? batch.status.charAt(0).toUpperCase() + batch.status.slice(1) 
+                                        : `Class ${batch?.class}`}
                                 </span>
                             </div>
                             
@@ -171,7 +183,7 @@ function ParentBatchDetail() {
                         <div className="space-y-4">
                             {batch?.announcements?.length > 0 ? (
                                 batch.announcements.map((announcement, index) => (
-                                    <div key={index} className="border-l-4 border-indigo-500 pl-4 py-4 bg-gray-50 rounded-r-lg">
+                                    <div key={announcement._id || index} className="border-l-4 border-indigo-500 pl-4 py-4 bg-gray-50 rounded-r-lg">
                                         <h3 className="text-lg font-medium text-gray-900">{announcement.title}</h3>
                                         <p className="mt-2 text-gray-600">{announcement.content}</p>
                                         <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -184,7 +196,10 @@ function ParentBatchDetail() {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-500">No announcements yet</p>
+                                <div className="text-center py-8">
+                                    <Bell className="mx-auto h-12 w-12 text-gray-300" />
+                                    <p className="mt-2 text-gray-500">No announcements yet</p>
+                                </div>
                             )}
                         </div>
                     </div>

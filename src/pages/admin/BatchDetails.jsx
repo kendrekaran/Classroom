@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck } from 'lucide-react';
+import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Trash2, AlertCircle, Edit } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import AnnouncementForm from '../../components/AnnouncementForm';
@@ -17,6 +17,9 @@ function BatchDetails() {
     const navigate = useNavigate();
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(null);
+    const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+    const [success, setSuccess] = useState('');
 
     useEffect(() => {
         fetchBatchDetails();
@@ -81,8 +84,89 @@ function BatchDetails() {
         fetchAnnouncements();
     }, [batchId, navigate]);
 
-    const handleAnnouncementCreated = (newAnnouncement) => {
-        setAnnouncements([newAnnouncement, ...announcements]);
+    const handleAnnouncementCreated = (newAnnouncement, isUpdate = false) => {
+        if (isUpdate) {
+            // Update existing announcement in the list
+            setAnnouncements(announcements.map(announcement => 
+                announcement._id === newAnnouncement._id ? newAnnouncement : announcement
+            ));
+            setSelectedAnnouncement(null);
+        } else {
+            // Add new announcement to the list
+            setAnnouncements([newAnnouncement, ...announcements]);
+        }
+    };
+
+    const handleDeleteAnnouncement = async (announcementId) => {
+        try {
+            const teacherData = localStorage.getItem('teacherUser');
+            if (!teacherData) {
+                navigate('/teacher/login');
+                return;
+            }
+
+            const { token } = JSON.parse(teacherData);
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}/announcements/${announcementId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                // Remove the announcement from state
+                setAnnouncements(announcements.filter(announcement => announcement._id !== announcementId));
+                // Show success message
+                setError(''); // Clear any existing errors
+                setSuccess('Announcement deleted successfully');
+                setTimeout(() => setSuccess(''), 3000);
+            } else {
+                setError('Failed to delete announcement: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting announcement:', error);
+            setError(error.response?.data?.message || 'Failed to delete announcement');
+        }
+    };
+
+    const handleRemoveStudent = async (studentId) => {
+        try {
+            const teacherData = localStorage.getItem('teacherUser');
+            if (!teacherData) {
+                navigate('/teacher/login');
+                return;
+            }
+
+            const { token } = JSON.parse(teacherData);
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}/students/${studentId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                // Update the batch state to remove the student
+                setBatch(prevBatch => ({
+                    ...prevBatch,
+                    students: prevBatch.students.filter(student => student._id !== studentId)
+                }));
+                setShowRemoveConfirm(null);
+                // Show success message
+                setError(''); // Clear any existing errors
+                setSuccess('Student removed successfully');
+                setTimeout(() => setSuccess(''), 3000);
+            } else {
+                setError('Failed to remove student: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Error removing student:', error);
+            setError(error.response?.data?.message || 'Failed to remove student');
+        }
     };
 
     if (loading) {
@@ -238,12 +322,44 @@ function BatchDetails() {
                                                             <div className="text-sm text-gray-500">{student.email}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            <button
-                                                                onClick={() => setSelectedStudent(student)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                View Attendance
-                                                            </button>
+                                                            <div className="flex space-x-3">
+                                                                <button
+                                                                    onClick={() => setSelectedStudent(student)}
+                                                                    className="text-blue-600 hover:text-blue-900"
+                                                                >
+                                                                    View Attendance
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setShowRemoveConfirm(student._id)}
+                                                                    className="text-red-600 hover:text-red-900 flex items-center"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 mr-1" />
+                                                                    Remove
+                                                                </button>
+                                                            </div>
+                                                            
+                                                            {showRemoveConfirm === student._id && (
+                                                                <div className="mt-2 p-2 bg-red-50 rounded-md">
+                                                                    <p className="text-sm text-red-700 mb-2 flex items-center">
+                                                                        <AlertCircle className="w-4 h-4 mr-1" />
+                                                                        Remove {student.name} from this batch?
+                                                                    </p>
+                                                                    <div className="flex space-x-2">
+                                                                        <button
+                                                                            onClick={() => handleRemoveStudent(student._id)}
+                                                                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                                                        >
+                                                                            Confirm
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setShowRemoveConfirm(null)}
+                                                                            className="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -283,6 +399,7 @@ function BatchDetails() {
                         <AnnouncementForm 
                             batchId={batchId}
                             onAnnouncementCreated={handleAnnouncementCreated}
+                            editAnnouncement={selectedAnnouncement}
                         />
                         <div className="p-6 bg-white rounded-lg shadow-sm">
                             <h2 className="mb-4 text-lg font-semibold">Recent Announcements</h2>
@@ -292,9 +409,25 @@ function BatchDetails() {
                                         key={announcement._id} 
                                         className="py-4 pl-4 bg-gray-50 rounded-r-lg border-l-4 border-red-500"
                                     >
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            {announcement.title}
-                                        </h3>
+                                        <div className="flex justify-between">
+                                            <h3 className="text-lg font-medium text-gray-900">
+                                                {announcement.title}
+                                            </h3>
+                                            <div className="flex space-x-2">
+                                                <button 
+                                                    onClick={() => setSelectedAnnouncement(announcement)}
+                                                    className="text-blue-600 hover:text-blue-800"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteAnnouncement(announcement._id)}
+                                                    className="text-red-600 hover:text-red-800"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
                                         <p className="mt-2 text-gray-600">
                                             {announcement.content}
                                         </p>
@@ -307,6 +440,12 @@ function BatchDetails() {
                                         </div>
                                     </div>
                                 ))}
+                                {announcements.length === 0 && (
+                                    <div className="text-center py-6">
+                                        <Bell className="mx-auto h-12 w-12 text-gray-300" />
+                                        <p className="mt-2 text-gray-500">No announcements yet</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -334,6 +473,20 @@ function BatchDetails() {
                     <ArrowLeft className="mr-2 w-4 h-4" />
                     Back to Batches
                 </Link>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
+                        {error}
+                    </div>
+                )}
+
+                {/* Success Message */}
+                {success && (
+                    <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg">
+                        {success}
+                    </div>
+                )}
 
                 {/* Batch Header */}
                 <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">

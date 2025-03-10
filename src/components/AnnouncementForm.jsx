@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { X, Edit, Plus } from 'lucide-react';
 
-function AnnouncementForm({ batchId, onAnnouncementCreated }) {
+function AnnouncementForm({ batchId, onAnnouncementCreated, editAnnouncement = null }) {
     const [formData, setFormData] = useState({
         title: '',
         content: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (editAnnouncement) {
+            setFormData({
+                title: editAnnouncement.title,
+                content: editAnnouncement.content
+            });
+            setIsEditing(true);
+        } else {
+            setFormData({
+                title: '',
+                content: ''
+            });
+            setIsEditing(false);
+        }
+    }, [editAnnouncement]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,37 +39,83 @@ function AnnouncementForm({ batchId, onAnnouncementCreated }) {
             }
 
             const teacherUser = JSON.parse(teacherUserStr);
-            console.log('Teacher data:', teacherUser); // Debug log
-
-            const response = await axios.post(
-                `http://localhost:3000/admin/batches/${batchId}/announcements`,
-                {
-                    ...formData,
-                    teacher_id: teacherUser.id // Add teacher ID to request
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${teacherUser.id}`, // Use teacher ID as token
-                        'Content-Type': 'application/json'
+            
+            if (isEditing && editAnnouncement) {
+                // Update existing announcement
+                const response = await axios.put(
+                    `http://localhost:3000/admin/batches/${batchId}/announcements/${editAnnouncement._id}`,
+                    {
+                        ...formData,
+                        teacher_id: teacherUser.id
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${teacherUser.token}`,
+                            'Content-Type': 'application/json'
+                        }
                     }
-                }
-            );
+                );
 
-            if (response.data.success) {
-                setFormData({ title: '', content: '' });
-                onAnnouncementCreated(response.data.announcement);
+                if (response.data.success) {
+                    setFormData({ title: '', content: '' });
+                    onAnnouncementCreated(response.data.announcement, true);
+                    setIsEditing(false);
+                } else {
+                    throw new Error(response.data.message || 'Failed to update announcement');
+                }
+            } else {
+                // Create new announcement
+                const response = await axios.post(
+                    `http://localhost:3000/admin/batches/${batchId}/announcements`,
+                    {
+                        ...formData,
+                        teacher_id: teacherUser.id
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${teacherUser.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.data.success) {
+                    setFormData({ title: '', content: '' });
+                    onAnnouncementCreated(response.data.announcement);
+                } else {
+                    throw new Error(response.data.message || 'Failed to create announcement');
+                }
             }
         } catch (error) {
-            console.error('Announcement creation error:', error);
-            setError(error.response?.data?.message || 'Error creating announcement');
+            console.error('Announcement operation error:', error);
+            setError(error.response?.data?.message || error.message || `Error ${isEditing ? 'updating' : 'creating'} announcement`);
         } finally {
             setLoading(false);
         }
     };
 
+    const cancelEdit = () => {
+        setFormData({ title: '', content: '' });
+        setIsEditing(false);
+        setError('');
+    };
+
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-medium mb-4">Create Announcement</h3>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">
+                    {isEditing ? 'Edit Announcement' : 'Create Announcement'}
+                </h3>
+                {isEditing && (
+                    <button 
+                        onClick={cancelEdit}
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                )}
+            </div>
+            
             {error && (
                 <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
                     {error}
@@ -87,9 +151,19 @@ function AnnouncementForm({ batchId, onAnnouncementCreated }) {
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    className={`inline-flex justify-center items-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
-                    {loading ? 'Creating...' : 'Create Announcement'}
+                    {isEditing ? (
+                        <>
+                            <Edit className="w-4 h-4 mr-2" />
+                            {loading ? 'Updating...' : 'Update Announcement'}
+                        </>
+                    ) : (
+                        <>
+                            <Plus className="w-4 h-4 mr-2" />
+                            {loading ? 'Creating...' : 'Create Announcement'}
+                        </>
+                    )}
                 </button>
             </form>
         </div>
