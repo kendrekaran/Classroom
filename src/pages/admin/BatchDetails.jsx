@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck } from 'lucide-react';
+import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Edit, Trash2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import AnnouncementForm from '../../components/AnnouncementForm';
@@ -17,6 +17,11 @@ function BatchDetails() {
     const navigate = useNavigate();
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+    const [deleteItemType, setDeleteItemType] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         fetchBatchDetails();
@@ -83,6 +88,49 @@ function BatchDetails() {
 
     const handleAnnouncementCreated = (newAnnouncement) => {
         setAnnouncements([newAnnouncement, ...announcements]);
+    };
+
+    const handleAnnouncementUpdated = (updatedAnnouncement) => {
+        setAnnouncements(announcements.map(announcement => 
+            announcement._id === updatedAnnouncement._id ? updatedAnnouncement : announcement
+        ));
+        setSelectedAnnouncement(null);
+    };
+
+    const handleDeleteAnnouncement = async () => {
+        if (!deleteItemId || deleteItemType !== 'announcement') return;
+        
+        setDeleteLoading(true);
+        try {
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}/announcements/${deleteItemId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${teacherData.id}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                setAnnouncements(announcements.filter(announcement => announcement._id !== deleteItemId));
+                setShowDeleteModal(false);
+                setDeleteItemId(null);
+                setDeleteItemType(null);
+            }
+        } catch (error) {
+            console.error('Error deleting announcement:', error);
+            setError(error.response?.data?.message || 'Error deleting announcement');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const confirmDelete = (id, type) => {
+        setDeleteItemId(id);
+        setDeleteItemType(type);
+        setShowDeleteModal(true);
     };
 
     if (loading) {
@@ -283,30 +331,56 @@ function BatchDetails() {
                         <AnnouncementForm 
                             batchId={batchId}
                             onAnnouncementCreated={handleAnnouncementCreated}
+                            announcementToEdit={selectedAnnouncement}
+                            onAnnouncementUpdated={handleAnnouncementUpdated}
+                            onCancelEdit={() => setSelectedAnnouncement(null)}
                         />
                         <div className="p-6 bg-white rounded-lg shadow-sm">
                             <h2 className="mb-4 text-lg font-semibold">Recent Announcements</h2>
                             <div className="space-y-4">
-                                {announcements.map((announcement) => (
-                                    <div 
-                                        key={announcement._id} 
-                                        className="py-4 pl-4 bg-gray-50 rounded-r-lg border-l-4 border-red-500"
-                                    >
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            {announcement.title}
-                                        </h3>
-                                        <p className="mt-2 text-gray-600">
-                                            {announcement.content}
-                                        </p>
-                                        <div className="flex items-center mt-2 text-sm text-gray-500">
-                                            <Calendar className="mr-1 w-4 h-4" />
-                                            {new Date(announcement.createdAt).toLocaleDateString()}
-                                            <span className="mx-2">•</span>
-                                            <User className="mr-1 w-4 h-4" />
-                                            {announcement.teacher_id.name}
+                                {announcements.length > 0 ? (
+                                    announcements.map((announcement) => (
+                                        <div 
+                                            key={announcement._id} 
+                                            className="py-4 pl-4 pr-3 bg-gray-50 rounded-r-lg border-l-4 border-red-500 relative"
+                                        >
+                                            <div className="absolute top-3 right-3 flex space-x-2">
+                                                <button 
+                                                    onClick={() => setSelectedAnnouncement(announcement)}
+                                                    className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                                                    title="Edit announcement"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => confirmDelete(announcement._id, 'announcement')}
+                                                    className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                                                    title="Delete announcement"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <h3 className="text-lg font-medium text-gray-900 pr-16">
+                                                {announcement.title}
+                                            </h3>
+                                            <p className="mt-2 text-gray-600">
+                                                {announcement.content}
+                                            </p>
+                                            <div className="flex items-center mt-2 text-sm text-gray-500">
+                                                <Calendar className="mr-1 w-4 h-4" />
+                                                {new Date(announcement.createdAt).toLocaleDateString()}
+                                                <span className="mx-2">•</span>
+                                                <User className="mr-1 w-4 h-4" />
+                                                {announcement.teacher_id.name}
+                                            </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="py-8 text-center bg-gray-50 rounded-lg">
+                                        <Bell className="mx-auto mb-2 w-12 h-12 text-gray-400" />
+                                        <p className="text-gray-500">No announcements yet</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -379,6 +453,45 @@ function BatchDetails() {
                 {/* Tab Content */}
                 {renderTabContent()}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                        <div className="flex items-center mb-4 text-red-600">
+                            <AlertCircle className="w-6 h-6 mr-2" />
+                            <h3 className="text-lg font-medium">Confirm Deletion</h3>
+                        </div>
+                        <p className="mb-6 text-gray-700">
+                            Are you sure you want to delete this {deleteItemType}? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setDeleteItemId(null);
+                                    setDeleteItemType(null);
+                                }}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                disabled={deleteLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (deleteItemType === 'announcement') {
+                                        handleDeleteAnnouncement();
+                                    }
+                                }}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-70"
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -43,11 +43,11 @@ function StudentAttendanceDetails({ batchId, student }) {
     if (!attendance) return <div>No attendance records found</div>;
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="p-6 bg-white rounded-lg shadow-sm">
+            <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <User className="h-5 w-5 text-indigo-600" />
+                    <div className="flex justify-center items-center w-10 h-10 bg-indigo-100 rounded-full">
+                        <User className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="ml-4">
                         <h3 className="text-lg font-medium text-gray-900">{student.name}</h3>
@@ -64,15 +64,15 @@ function StudentAttendanceDetails({ batchId, student }) {
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-500">Total Classes</p>
                     <p className="text-xl font-semibold">{attendance.statistics.totalClasses}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
+                <div className="p-4 bg-green-50 rounded-lg">
                     <p className="text-sm text-green-600">Present</p>
                     <p className="text-xl font-semibold text-green-700">{attendance.statistics.present}</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg">
+                <div className="p-4 bg-red-50 rounded-lg">
                     <p className="text-sm text-red-600">Absent</p>
                     <p className="text-xl font-semibold text-red-700">{attendance.statistics.absent}</p>
                 </div>
@@ -86,7 +86,7 @@ function StudentAttendanceDetails({ batchId, student }) {
                         type="date"
                         value={dateRange.startDate}
                         onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                        className="mt-1 block rounded-md border-gray-300 shadow-sm"
+                        className="block mt-1 rounded-md border-gray-300 shadow-sm"
                     />
                 </div>
                 <div>
@@ -95,7 +95,7 @@ function StudentAttendanceDetails({ batchId, student }) {
                         type="date"
                         value={dateRange.endDate}
                         onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                        className="mt-1 block rounded-md border-gray-300 shadow-sm"
+                        className="block mt-1 rounded-md border-gray-300 shadow-sm"
                     />
                 </div>
             </div>
@@ -105,9 +105,9 @@ function StudentAttendanceDetails({ batchId, student }) {
                 <table className="min-w-full">
                     <thead>
                         <tr className="bg-gray-50">
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
+                            <th className="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">Date</th>
+                            <th className="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">Status</th>
+                            <th className="px-4 py-3 text-xs font-medium text-left text-gray-500 uppercase">Remarks</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -120,12 +120,12 @@ function StudentAttendanceDetails({ batchId, student }) {
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         ${record.status === 'present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {record.status === 'present' ?
-                                            <CheckCircle className="w-4 h-4 mr-1" /> :
-                                            <XCircle className="w-4 h-4 mr-1" />}
+                                            <CheckCircle className="mr-1 w-4 h-4" /> :
+                                            <XCircle className="mr-1 w-4 h-4" />}
                                         {record.status}
                                     </span>
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
                                     {record.remarks || '-'}
                                 </td>
                             </tr>

@@ -73,9 +73,9 @@ function TimetableManager({ batchId }) {
         }
     };
 
-    const handleAddEntry = () => {
+    const handleAddEntry = async () => {
         if (!newEntry.hour || !newEntry.subject) {
-            setError('Period and Subject are required');
+            setError('Hour and subject are required');
             return;
         }
 
@@ -90,95 +90,107 @@ function TimetableManager({ batchId }) {
             return;
         }
 
-        // Check if this hour already has an entry
-        const existingEntryIndex = timetable[selectedDay].findIndex(
-            entry => entry.hour === hourNum
-        );
-
-        const updatedDayEntries = [...timetable[selectedDay]];
-        
-        if (existingEntryIndex !== -1) {
-            // Update existing entry
-            updatedDayEntries[existingEntryIndex] = {
-                ...updatedDayEntries[existingEntryIndex],
-                subject: newEntry.subject,
-                teacher: newEntry.teacher,
-                startTime: newEntry.startTime,
-                endTime: newEntry.endTime
-            };
-        } else {
-            // Add new entry
-            updatedDayEntries.push({
-                hour: hourNum,
-                subject: newEntry.subject,
-                teacher: newEntry.teacher,
-                startTime: newEntry.startTime,
-                endTime: newEntry.endTime
-            });
-        }
-
-        // Sort entries by hour
-        updatedDayEntries.sort((a, b) => a.hour - b.hour);
-
-        setTimetable({
-            ...timetable,
-            [selectedDay]: updatedDayEntries
-        });
-
-        // Clear the form
-        setNewEntry({ 
-            hour: '', 
-            subject: '', 
-            teacher: '',
-            startTime: '',
-            endTime: ''
-        });
-        setError('');
-        setShowAddForm(false);
-    };
-
-    const handleRemoveEntry = (hour) => {
-        const updatedEntries = timetable[selectedDay].filter(entry => entry.hour !== hour);
-        
-        setTimetable({
-            ...timetable,
-            [selectedDay]: updatedEntries
-        });
-    };
-
-    const handleSaveTimetable = async () => {
         try {
             setLoading(true);
-            const teacherData = localStorage.getItem('teacherUser');
-            if (!teacherData) {
-                setError('You must be logged in to save the timetable');
-                setLoading(false);
-                return;
-            }
+            setError('');
+            setSuccess('');
 
-            const { token } = JSON.parse(teacherData);
-            const response = await axios.post(
-                `http://localhost:3000/admin/batches/${batchId}/timetable`,
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            
+            const response = await axios.put(
+                `http://localhost:3000/admin/batches/${batchId}/timetable/${selectedDay}/${hourNum}`,
                 {
-                    day: selectedDay,
-                    timetableEntries: timetable[selectedDay]
+                    subject: newEntry.subject,
+                    description: `${newEntry.teacher || ''} ${newEntry.startTime ? `(${newEntry.startTime} - ${newEntry.endTime || ''})` : ''}`.trim()
                 },
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${teacherData.id}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
 
             if (response.data.success) {
-                setSuccess(`Timetable for ${selectedDay} saved successfully`);
+                setTimetable(response.data.timetable);
+                setNewEntry({ 
+                    hour: '', 
+                    subject: '', 
+                    teacher: '',
+                    startTime: '',
+                    endTime: ''
+                });
+                setShowAddForm(false);
+                setSuccess('Timetable entry added successfully');
                 setTimeout(() => setSuccess(''), 3000);
-            } else {
-                setError('Failed to save timetable');
             }
         } catch (error) {
-            console.error('Error saving timetable:', error);
-            setError(error.response?.data?.message || 'Failed to save timetable');
+            console.error('Error adding timetable entry:', error);
+            setError(error.response?.data?.message || 'Error adding timetable entry');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveEntry = async (hour) => {
+        try {
+            setLoading(true);
+            setError('');
+            setSuccess('');
+
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}/timetable/${selectedDay}/${hour}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${teacherData.id}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                setTimetable(response.data.timetable);
+                setSuccess(`Timetable entry removed successfully`);
+                setTimeout(() => setSuccess(''), 3000);
+            }
+        } catch (error) {
+            console.error('Error removing timetable entry:', error);
+            setError(error.response?.data?.message || 'Error removing timetable entry');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClearDay = async () => {
+        if (!window.confirm(`Are you sure you want to clear all entries for ${selectedDay}?`)) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError('');
+            setSuccess('');
+
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}/timetable/${selectedDay}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${teacherData.id}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                setTimetable(response.data.timetable);
+                setSuccess(`All entries for ${selectedDay} cleared successfully`);
+                setTimeout(() => setSuccess(''), 3000);
+            }
+        } catch (error) {
+            console.error('Error clearing timetable entries:', error);
+            setError(error.response?.data?.message || 'Error clearing timetable entries');
         } finally {
             setLoading(false);
         }
@@ -249,13 +261,22 @@ function TimetableManager({ batchId }) {
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-medium capitalize">{selectedDay} Schedule</h3>
-                        <button
-                            onClick={() => setShowAddForm(true)}
-                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-                        >
-                            <Plus size={16} className="mr-1" />
-                            Add Class
-                        </button>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => setShowAddForm(true)}
+                                className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                            >
+                                <Plus size={16} className="mr-1" />
+                                Add Entry
+                            </button>
+                            <button
+                                onClick={handleClearDay}
+                                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                            >
+                                <X size={16} className="mr-1" />
+                                Clear Day
+                            </button>
+                        </div>
                     </div>
                     
                     {/* Table-like Grid Layout */}
@@ -405,17 +426,6 @@ function TimetableManager({ batchId }) {
                         </div>
                     </div>
                 )}
-            </div>
-            
-            <div className="flex justify-end">
-                <button
-                    onClick={handleSaveTimetable}
-                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    disabled={loading}
-                >
-                    <Save size={18} className="mr-2" />
-                    Save Timetable
-                </button>
             </div>
         </div>
     );
