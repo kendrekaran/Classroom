@@ -99,12 +99,58 @@ function BatchDetails() {
     };
 
     const handleDelete = async () => {
-        if (!deleteItemId || deleteItemType !== 'announcement') return;
+        if (!deleteItemId) return;
         
         try {
             const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            
+            if (deleteItemType === 'announcement') {
+                const response = await axios.delete(
+                    `http://localhost:3000/admin/batches/${batchId}/announcements/${deleteItemId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${teacherData.id}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.data.success) {
+                    setAnnouncements(announcements.filter(announcement => announcement._id !== deleteItemId));
+                    toast.success('Announcement deleted successfully');
+                }
+            } else if (deleteItemType === 'student') {
+                const response = await axios.delete(
+                    `http://localhost:3000/admin/batches/${batchId}/students/${deleteItemId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${teacherData.id}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.data.success) {
+                    // Update batch data with the updated student list
+                    setBatch(response.data.batch);
+                    toast.success('Student removed from batch successfully');
+                }
+            }
+            
+            setShowDeleteModal(false);
+            setDeleteItemId(null);
+            setDeleteItemType(null);
+        } catch (error) {
+            console.error(`Error deleting ${deleteItemType}:`, error);
+            toast.error(error.response?.data?.message || `Error deleting ${deleteItemType}`);
+        }
+    };
+
+    const handleDeleteBatch = async () => {
+        try {
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
             const response = await axios.delete(
-                `http://localhost:3000/admin/batches/${batchId}/announcements/${deleteItemId}`,
+                `http://localhost:3000/admin/batches/${batchId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${teacherData.id}`,
@@ -114,14 +160,12 @@ function BatchDetails() {
             );
 
             if (response.data.success) {
-                setAnnouncements(announcements.filter(announcement => announcement._id !== deleteItemId));
-                setShowDeleteModal(false);
-                setDeleteItemId(null);
-                setDeleteItemType(null);
+                toast.success('Batch deleted successfully');
+                navigate('/teacher/batches');
             }
         } catch (error) {
-            console.error('Error deleting announcement:', error);
-            setError(error.response?.data?.message || 'Error deleting announcement');
+            console.error('Error deleting batch:', error);
+            toast.error(error.response?.data?.message || 'Error deleting batch');
         }
     };
 
@@ -242,10 +286,19 @@ function BatchDetails() {
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-lg font-semibold text-gray-900">Enrolled Students</h2>
-                                    <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent hover:bg-red-700">
-                                        <Users className="mr-2 w-4 h-4" />
-                                        Add Students
-                                    </button>
+                                    <div className="flex space-x-2">
+                                        <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent hover:bg-red-700">
+                                            <Users className="mr-2 w-4 h-4" />
+                                            Add Students
+                                        </button>
+                                        <button 
+                                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50"
+                                            title="Click on a student's Remove button to remove them from this batch"
+                                        >
+                                            <Trash2 className="mr-2 w-4 h-4" />
+                                            Student Management
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Students Table */}
@@ -281,9 +334,21 @@ function BatchDetails() {
                                                             <div className="flex space-x-2">
                                                                 <button
                                                                     onClick={() => setSelectedStudent(student)}
-                                                                    className="text-blue-600 hover:text-blue-900"
+                                                                    className="text-blue-600 hover:text-blue-900 inline-flex items-center"
                                                                 >
+                                                                    <ClipboardCheck className="w-4 h-4 mr-1" />
                                                                     View Attendance
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setDeleteItemId(student._id);
+                                                                        setDeleteItemType('student');
+                                                                        setShowDeleteModal(true);
+                                                                    }}
+                                                                    className="text-red-600 hover:text-red-900 inline-flex items-center"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 mr-1" />
+                                                                    Remove
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -407,6 +472,28 @@ function BatchDetails() {
                     Back to Batches
                 </Link>
 
+                {/* Action Buttons */}
+                <div className="flex justify-end mb-6 space-x-3">
+                    <Link
+                        to={`/teacher/batches/${batchId}/edit`}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+                    >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Batch
+                    </Link>
+                    <button
+                        onClick={() => {
+                            if (window.confirm("Are you sure you want to delete this batch? This action cannot be undone.")) {
+                                handleDeleteBatch();
+                            }
+                        }}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 focus:outline-none"
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Batch
+                    </button>
+                </div>
+
                 {/* Batch Header */}
                 <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -458,7 +545,12 @@ function BatchDetails() {
                     <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
                         <p className="text-sm text-gray-500 mb-4">
-                            Are you sure you want to delete this item? This action cannot be undone.
+                            {deleteItemType === 'announcement' 
+                                ? "Are you sure you want to delete this announcement? This action cannot be undone."
+                                : deleteItemType === 'student'
+                                ? "Are you sure you want to remove this student from the batch? They will no longer have access to this batch's content."
+                                : "Are you sure you want to delete this item? This action cannot be undone."
+                            }
                         </p>
                         <div className="flex justify-end gap-3">
                             <button
@@ -475,7 +567,7 @@ function BatchDetails() {
                                 onClick={handleDelete}
                                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                             >
-                                Delete
+                                {deleteItemType === 'student' ? 'Remove' : 'Delete'}
                             </button>
                         </div>
                     </div>

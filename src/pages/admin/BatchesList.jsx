@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Users, BookOpen, Search, RefreshCcw } from 'lucide-react';
+import { Plus, Users, BookOpen, Search, RefreshCcw, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import { toast } from 'react-toastify';
@@ -43,6 +43,38 @@ function BatchesList() {
         } catch (error) {
             setError('Failed to fetch batches');
             setLoading(false);
+        }
+    };
+
+    const handleDeleteBatch = async (batchId, e) => {
+        // Prevent navigation to batch details
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!window.confirm('Are you sure you want to delete this batch? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
+            const response = await axios.delete(
+                `http://localhost:3000/admin/batches/${batchId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${teacherData.id}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                toast.success('Batch deleted successfully');
+                // Remove the deleted batch from the state
+                setBatches(batches.filter(batch => batch._id !== batchId));
+            }
+        } catch (error) {
+            console.error('Error deleting batch:', error);
+            toast.error(error.response?.data?.message || 'Error deleting batch');
         }
     };
 
@@ -167,13 +199,20 @@ function BatchesList() {
                                                 {batch.students?.length || 0} Students
                                             </div>
 
-                                            <div className="mt-6">
+                                            <div className="mt-6 flex justify-between items-center">
                                                 <Link
                                                     to={`/teacher/batches/${batch._id}`}
                                                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
                                                     View Details →
                                                 </Link>
+                                                <button
+                                                    onClick={(e) => handleDeleteBatch(batch._id, e)}
+                                                    className="text-gray-500 hover:text-red-600 transition-colors"
+                                                    title="Delete Batch"
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
