@@ -108,7 +108,7 @@ function StudentNavbar() {
                                 <Link to="/user/login" className="text-gray-600 hover:text-indigo-600">
                                     Login
                                 </Link>
-                                <Link to="/user/signup" className="text-gray-600 hover:text-indigo-600">
+                                <Link to="/user/register" className="text-gray-600 hover:text-indigo-600">
                                     Sign Up
                                 </Link>
                                 <Link
@@ -195,7 +195,7 @@ function StudentNavbar() {
                                         Login
                                     </Link>
                                     <Link 
-                                        to="/user/signup" 
+                                        to="/user/register" 
                                         className="block px-4 py-2 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
                                         onClick={() => setIsMenuOpen(false)}
                                     >

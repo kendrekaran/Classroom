@@ -9,10 +9,12 @@ import AdminLandingPage from './pages/AdminPage';
 import TeacherLoginPage from './pages/admin/LoginPage';
 import TeacherSignupPage from './pages/admin/SignupPage';
 import ParentLoginPage from './pages/user/ParentLogin';
+import ParentSignupPage from './pages/user/ParentSignup';
 import BatchCreation from './pages/admin/BatchCreation';
 import BatchesList from './pages/admin/BatchesList';
 import JoinBatch from './pages/student/JoinBatch';
 import UserLoginComponent from './pages/UserLogin';
+import UserRegisterComponent from './pages/UserRegister';
 import StudentBatches from './pages/student/Batches';
 import ParentDashboard from './pages/parent/Dashboard';
 import BatchDetails from './pages/admin/BatchDetails';
@@ -26,11 +28,13 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/parent/login" element={<ParentLoginPage />} />
+        <Route path="/parent/signup" element={<ParentSignupPage />} />
         <Route path="/parent/dashboard" element={<ParentDashboard />} />
         <Route path="/parent/batches/:batchId" element={<ParentBatchDetail />} />
         <Route path="/student/login" element={<UserLoginPage />} />
         <Route path="/user/signup" element={<UserSignupPage />} />
         <Route path="/user/login" element={<UserLoginComponent />} />
+        <Route path="/user/register" element={<UserRegisterComponent />} />
         <Route path="/teacher" element={<AdminLandingPage />} />
         <Route path="/teacher/login" element={<TeacherLoginPage />} />
         <Route path="/teacher/signup" element={<TeacherSignupPage />} />
