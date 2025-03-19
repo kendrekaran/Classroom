@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Edit, Trash2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import TeacherNavbar from '../../components/TeacherNavbar';
 import AnnouncementForm from '../../components/AnnouncementForm';
 import AttendanceMarker from '../../components/AttendanceMarker';
@@ -18,10 +19,10 @@ function BatchDetails() {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+    const [showAttendanceModal, setShowAttendanceModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteItemId, setDeleteItemId] = useState(null);
     const [deleteItemType, setDeleteItemType] = useState(null);
-    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         fetchBatchDetails();
@@ -97,10 +98,9 @@ function BatchDetails() {
         setSelectedAnnouncement(null);
     };
 
-    const handleDeleteAnnouncement = async () => {
+    const handleDelete = async () => {
         if (!deleteItemId || deleteItemType !== 'announcement') return;
         
-        setDeleteLoading(true);
         try {
             const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
             const response = await axios.delete(
@@ -122,15 +122,7 @@ function BatchDetails() {
         } catch (error) {
             console.error('Error deleting announcement:', error);
             setError(error.response?.data?.message || 'Error deleting announcement');
-        } finally {
-            setDeleteLoading(false);
         }
-    };
-
-    const confirmDelete = (id, type) => {
-        setDeleteItemId(id);
-        setDeleteItemType(type);
-        setShowDeleteModal(true);
     };
 
     if (loading) {
@@ -286,12 +278,14 @@ function BatchDetails() {
                                                             <div className="text-sm text-gray-500">{student.email}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            <button
-                                                                onClick={() => setSelectedStudent(student)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                View Attendance
-                                                            </button>
+                                                            <div className="flex space-x-2">
+                                                                <button
+                                                                    onClick={() => setSelectedStudent(student)}
+                                                                    className="text-blue-600 hover:text-blue-900"
+                                                                >
+                                                                    View Attendance
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -353,7 +347,11 @@ function BatchDetails() {
                                                     <Edit className="w-4 h-4" />
                                                 </button>
                                                 <button 
-                                                    onClick={() => confirmDelete(announcement._id, 'announcement')}
+                                                    onClick={() => {
+                                                        setDeleteItemId(announcement._id);
+                                                        setDeleteItemType('announcement');
+                                                        setShowDeleteModal(true);
+                                                    }}
                                                     className="p-1 text-gray-500 hover:text-red-600 transition-colors"
                                                     title="Delete announcement"
                                                 >
@@ -456,37 +454,28 @@ function BatchDetails() {
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                        <div className="flex items-center mb-4 text-red-600">
-                            <AlertCircle className="w-6 h-6 mr-2" />
-                            <h3 className="text-lg font-medium">Confirm Deletion</h3>
-                        </div>
-                        <p className="mb-6 text-gray-700">
-                            Are you sure you want to delete this {deleteItemType}? This action cannot be undone.
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Are you sure you want to delete this item? This action cannot be undone.
                         </p>
-                        <div className="flex justify-end space-x-3">
+                        <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => {
                                     setShowDeleteModal(false);
                                     setDeleteItemId(null);
                                     setDeleteItemType(null);
                                 }}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                                disabled={deleteLoading}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
-                                    if (deleteItemType === 'announcement') {
-                                        handleDeleteAnnouncement();
-                                    }
-                                }}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-70"
-                                disabled={deleteLoading}
+                                onClick={handleDelete}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                             >
-                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                                Delete
                             </button>
                         </div>
                     </div>

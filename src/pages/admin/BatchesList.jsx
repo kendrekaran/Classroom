@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Users, BookOpen,  Search,  RefreshCcw } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Users, BookOpen, Search, RefreshCcw } from 'lucide-react';
 import axios from 'axios';
 import TeacherNavbar from '../../components/TeacherNavbar';
+import { toast } from 'react-toastify';
 
 function BatchesList() {
     const [batches, setBatches] = useState([]);
@@ -11,6 +12,7 @@ function BatchesList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [currentTeacher, setCurrentTeacher] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Get teacher info from localStorage
@@ -165,27 +167,20 @@ function BatchesList() {
                                                 {batch.students?.length || 0} Students
                                             </div>
 
-                                            <div className="mt-6 flex justify-between items-center">
+                                            <div className="mt-6">
                                                 <Link
-                                                    to={`/teacher/batches/${batch._id}`} // Update this line
+                                                    to={`/teacher/batches/${batch._id}`}
                                                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
                                                     View Details →
                                                 </Link>
-                                                <button
-                                                    onClick={() => {/* Add manage students handler */}}
-                                                    className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                                                >
-                                                    <Users className="h-4 w-4 mr-1" />
-                                                    Manage
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Empty State - Updated message */}
+                            {/* Empty State */}
                             {filteredBatches.length === 0 && (
                                 <div className="text-center py-12">
                                     <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
@@ -196,20 +191,9 @@ function BatchesList() {
                                     </h3>
                                     <p className="mt-1 text-sm text-gray-500">
                                         {searchTerm 
-                                            ? "Try adjusting your search" 
-                                            : "Create your first batch to get started"}
+                                            ? "Try adjusting your search terms"
+                                            : "Get started by creating a new batch"}
                                     </p>
-                                    {!searchTerm && (
-                                        <div className="mt-6">
-                                            <Link
-                                                to="/teacher/batches/create"
-                                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                                            >
-                                                <Plus className="h-5 w-5 mr-2" />
-                                                Create New Batch
-                                            </Link>
-                                        </div>
-                                    )}
                                 </div>
                             )}
                         </>

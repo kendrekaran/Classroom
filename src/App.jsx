@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LandingPage from './pages/LandingPage';
 import UserLoginPage from './pages/user/LoginPage';
 import UserSignupPage from './pages/user/SignupPage';
@@ -20,6 +22,7 @@ import ParentBatchDetail from './pages/parent/BatchDetail';
 function App() {
   return (
     <Router>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/parent/login" element={<ParentLoginPage />} />
