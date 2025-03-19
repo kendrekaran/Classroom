@@ -25,16 +25,6 @@ function TimetableManager({ batchId }) {
     });
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const timeSlots = [
-        { hour: 1, label: '1st Period' },
-        { hour: 2, label: '2nd Period' },
-        { hour: 3, label: '3rd Period' },
-        { hour: 4, label: '4th Period' },
-        { hour: 5, label: '5th Period' },
-        { hour: 6, label: '6th Period' },
-        { hour: 7, label: '7th Period' },
-        { hour: 8, label: '8th Period' }
-    ];
 
     useEffect(() => {
         fetchTimetable();
@@ -74,34 +64,19 @@ function TimetableManager({ batchId }) {
     };
 
     const handleAddEntry = async () => {
-        if (!newEntry.hour || !newEntry.subject) {
-            setError('Hour and subject are required');
-            return;
-        }
-
-        if (!newEntry.startTime || !newEntry.endTime) {
-            setError('Start time and End time are required');
-            return;
-        }
-
-        const hourNum = parseInt(newEntry.hour);
-        if (isNaN(hourNum) || hourNum < 1 || hourNum > 8) {
-            setError('Period must be between 1 and 8');
-            return;
-        }
-
         try {
             setLoading(true);
             setError('');
             setSuccess('');
 
             const teacherData = JSON.parse(localStorage.getItem('teacherUser'));
-            
             const response = await axios.put(
-                `http://localhost:3000/admin/batches/${batchId}/timetable/${selectedDay}/${hourNum}`,
+                `http://localhost:3000/admin/batches/${batchId}/timetable/${selectedDay}/${newEntry.hour}`,
                 {
                     subject: newEntry.subject,
-                    description: `${newEntry.teacher || ''} ${newEntry.startTime ? `(${newEntry.startTime} - ${newEntry.endTime || ''})` : ''}`.trim()
+                    teacher: newEntry.teacher,
+                    startTime: newEntry.startTime,
+                    endTime: newEntry.endTime
                 },
                 {
                     headers: {
@@ -113,15 +88,15 @@ function TimetableManager({ batchId }) {
 
             if (response.data.success) {
                 setTimetable(response.data.timetable);
-                setNewEntry({ 
-                    hour: '', 
-                    subject: '', 
+                setSuccess('Timetable entry added successfully');
+                setShowAddForm(false);
+                setNewEntry({
+                    hour: '',
+                    subject: '',
                     teacher: '',
                     startTime: '',
                     endTime: ''
                 });
-                setShowAddForm(false);
-                setSuccess('Timetable entry added successfully');
                 setTimeout(() => setSuccess(''), 3000);
             }
         } catch (error) {
@@ -211,9 +186,10 @@ function TimetableManager({ batchId }) {
         }
     };
 
-    // Get entry for a specific time slot
-    const getEntryForTimeSlot = (hour) => {
-        return timetable[selectedDay]?.find(entry => entry.hour === hour);
+    // Get all periods for the selected day
+    const getPeriodsForDay = () => {
+        const periods = timetable[selectedDay] || [];
+        return periods.sort((a, b) => a.hour - b.hour);
     };
 
     if (loading) {
@@ -267,7 +243,7 @@ function TimetableManager({ batchId }) {
                                 className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
                             >
                                 <Plus size={16} className="mr-1" />
-                                Add Entry
+                                Add Period
                             </button>
                             <button
                                 onClick={handleClearDay}
@@ -292,53 +268,33 @@ function TimetableManager({ batchId }) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {timeSlots.map((slot) => {
-                                    const entry = getEntryForTimeSlot(slot.hour);
-                                    return (
-                                        <tr key={slot.hour} className={entry ? "bg-white" : "bg-gray-50"}>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {slot.label}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                {entry ? entry.subject : "-"}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                {entry ? entry.teacher || "-" : "-"}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                {entry ? (
-                                                    <span className="flex items-center">
-                                                        <Clock className="h-3 w-3 mr-1 text-blue-600" />
-                                                        {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
-                                                    </span>
-                                                ) : "-"}
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                                {entry ? (
-                                                    <button 
-                                                        onClick={() => handleRemoveEntry(slot.hour)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
-                                                ) : (
-                                                    <button 
-                                                        onClick={() => {
-                                                            setNewEntry({
-                                                                ...newEntry,
-                                                                hour: slot.hour.toString()
-                                                            });
-                                                            setShowAddForm(true);
-                                                        }}
-                                                        className="text-blue-600 hover:text-blue-900 text-xs"
-                                                    >
-                                                        Add
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {getPeriodsForDay().map((entry) => (
+                                    <tr key={entry.hour} className="bg-white">
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {entry.hour}th Period
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                            {entry.subject}
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                            {entry.teacher || "-"}
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                            <span className="flex items-center">
+                                                <Clock className="h-3 w-3 mr-1 text-blue-600" />
+                                                {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                            <button 
+                                                onClick={() => handleRemoveEntry(entry.hour)}
+                                                className="text-red-600 hover:text-red-900"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -359,17 +315,15 @@ function TimetableManager({ batchId }) {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
-                                <select
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Period Number</label>
+                                <input
+                                    type="number"
+                                    min="1"
                                     value={newEntry.hour}
                                     onChange={(e) => setNewEntry({ ...newEntry, hour: e.target.value })}
+                                    placeholder="Enter period number"
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring focus:ring-red-200 py-3 text-base"
-                                >
-                                    <option value="">Select Period</option>
-                                    {timeSlots.map(slot => (
-                                        <option key={slot.hour} value={slot.hour}>{slot.label}</option>
-                                    ))}
-                                </select>
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
@@ -421,7 +375,7 @@ function TimetableManager({ batchId }) {
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-base"
                             >
                                 <Plus size={18} className="mr-2" />
-                                Save Class Period
+                                Save Period
                             </button>
                         </div>
                     </div>

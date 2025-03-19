@@ -24,16 +24,6 @@ function TimetableViewer({ batchId, userType = 'student' }) {
     });
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const timeSlots = [
-        { hour: 1, label: '1st Period' },
-        { hour: 2, label: '2nd Period' },
-        { hour: 3, label: '3rd Period' },
-        { hour: 4, label: '4th Period' },
-        { hour: 5, label: '5th Period' },
-        { hour: 6, label: '6th Period' },
-        { hour: 7, label: '7th Period' },
-        { hour: 8, label: '8th Period' }
-    ];
 
     useEffect(() => {
         fetchTimetable();
@@ -110,9 +100,10 @@ function TimetableViewer({ batchId, userType = 'student' }) {
         }
     };
 
-    // Get entry for a specific time slot
-    const getEntryForTimeSlot = (hour) => {
-        return timetable[selectedDay]?.find(entry => entry.hour === hour);
+    // Get all periods for the selected day
+    const getPeriodsForDay = () => {
+        const periods = timetable[selectedDay] || [];
+        return periods.sort((a, b) => a.hour - b.hour);
     };
 
     if (loading) {
@@ -178,30 +169,25 @@ function TimetableViewer({ batchId, userType = 'student' }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {timeSlots.map((slot) => {
-                                        const entry = getEntryForTimeSlot(slot.hour);
-                                        return (
-                                            <tr key={slot.hour} className={entry ? "bg-white" : "bg-gray-50"}>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {slot.label}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                    {entry ? entry.subject : "-"}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                    {entry ? entry.teacher || "-" : "-"}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                                                    {entry && entry.startTime && entry.endTime ? (
-                                                        <span className="flex items-center">
-                                                            <Clock className="h-3 w-3 mr-1 text-blue-600" />
-                                                            {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
-                                                        </span>
-                                                    ) : "-"}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                    {getPeriodsForDay().map((entry) => (
+                                        <tr key={entry.hour} className="bg-white">
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {entry.hour}th Period
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                                {entry.subject}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                                {entry.teacher || "-"}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                                <span className="flex items-center">
+                                                    <Clock className="h-3 w-3 mr-1 text-blue-600" />
+                                                    {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
