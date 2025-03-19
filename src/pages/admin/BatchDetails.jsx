@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Edit, Trash2, AlertCircle, Award } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import TeacherNavbar from '../../components/TeacherNavbar';
@@ -8,6 +8,7 @@ import AnnouncementForm from '../../components/AnnouncementForm';
 import AttendanceMarker from '../../components/AttendanceMarker';
 import StudentAttendanceDetails from '../../components/StudentAttendanceDetails';
 import TimetableManager from '../../components/TimetableManager';
+import TestResultsManager from '../../components/TestResultsManager';
 
 function BatchDetails() {
     const [batch, setBatch] = useState(null);
@@ -454,6 +455,13 @@ function BatchDetails() {
                         <TimetableManager batchId={batchId} />
                     </div>
                 );
+            case 'tests':
+                return (
+                    <TestResultsManager 
+                        batchId={batchId} 
+                        students={batch.students || []} 
+                    />
+                );
             default:
                 return null;
         }
@@ -517,7 +525,8 @@ function BatchDetails() {
                             { id: 'students', label: 'Students', icon: Users },
                             { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
                             { id: 'announcements', label: 'Announcements', icon: Bell },
-                            { id: 'timetable', label: 'Timetable', icon: Calendar }
+                            { id: 'timetable', label: 'Timetable', icon: Calendar },
+                            { id: 'tests', label: 'Test Results', icon: Award }
                         ].map((tab) => (
                             <button
                                 key={tab.id}

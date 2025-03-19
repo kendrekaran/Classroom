@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck } from 'lucide-react';
+import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, Bell, ClipboardCheck, Award } from 'lucide-react';
 import axios from 'axios';
 import StudentNavbar from '../../components/StudentNavbar';
 import StudentAttendance from '../../components/StudentAttendance';
 import TimetableViewer from '../../components/TimetableViewer';
+import TestResultsViewer from '../../components/TestResultsViewer';
+import TestResultsDebug from '../../components/TestResultsDebug';
 
 function StudentBatchDetail() {
     const [batch, setBatch] = useState(null);
@@ -13,17 +15,30 @@ function StudentBatchDetail() {
     const { batchId } = useParams();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
+    const [userData, setUserData] = useState(null);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            navigate('/user/login');
+            return;
+        }
+        
+        try {
+            const parsedUserData = JSON.parse(userStr);
+            console.log('Student user data:', parsedUserData);
+            setUserData(parsedUserData);
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            navigate('/user/login');
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const fetchBatchDetails = async () => {
             try {
-                const userStr = localStorage.getItem('user');
-                if (!userStr) {
-                    navigate('/user/login');
-                    return;
-                }
+                if (!userData) return;
 
-                const userData = JSON.parse(userStr);
                 console.log('Fetching batch details:', {
                     batchId,
                     userData
@@ -56,10 +71,10 @@ function StudentBatchDetail() {
             }
         };
 
-        if (batchId) {
+        if (batchId && userData) {
             fetchBatchDetails();
         }
-    }, [batchId, navigate]);
+    }, [batchId, userData, navigate]);
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -166,88 +181,112 @@ function StudentBatchDetail() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
-                <div className="w-12 h-12 rounded-full border-b-2 border-indigo-600 animate-spin"></div>
-            </div>
-        );
-    }
-
-    if (error || !batch) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
-                <div className="text-center">
-                    <h2 className="text-xl font-semibold text-gray-900">Error</h2>
-                    <p className="mt-2 text-gray-600">{error || 'Batch not found'}</p>
+    return (
+        <div className="bg-gray-50 min-h-screen">
+            <StudentNavbar />
+            
+            {loading ? (
+                <div className="flex justify-center items-center min-h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            ) : error ? (
+                <div className="container mx-auto px-4 py-12">
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                        <div className="flex">
+                            <div className="py-1">
+                                <AlertCircle className="h-6 w-6 text-red-600 mr-3" />
+                            </div>
+                            <div>
+                                <p className="font-medium">Error</p>
+                                <p className="text-sm">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-6 text-center">
+                        <Link to="/student/batches" className="text-indigo-600 hover:text-indigo-800">
+                            ← Back to My Batches
+                        </Link>
+                    </div>
+                </div>
+            ) : batch ? (
+                <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    {/* Back Button */}
                     <Link
                         to="/student/batches"
-                        className="inline-flex items-center mt-4 text-indigo-600 hover:text-indigo-800"
+                        className="inline-flex items-center mb-6 text-indigo-600 hover:text-indigo-800"
                     >
                         <ArrowLeft className="mr-2 w-4 h-4" />
                         Back to My Batches
                     </Link>
-                </div>
-            </div>
-        );
-    }
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <StudentNavbar />
-            <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <Link
-                    to="/student/batches"
-                    className="inline-flex items-center mb-6 text-indigo-600 hover:text-indigo-800"
-                >
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to My Batches
-                </Link>
-
-                {/* Batch Header */}
-                <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">{batch.name}</h1>
-                            <p className="mt-1 text-sm text-gray-500">Batch Code: {batch.batch_code}</p>
-                        </div>
-                        <div className="mt-4 md:mt-0">
-                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
-                                Active
-                            </span>
+                    {/* Batch Header */}
+                    <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">{batch.name}</h1>
+                                <p className="mt-1 text-sm text-gray-500">Batch Code: {batch.batch_code}</p>
+                            </div>
+                            <div className="mt-4 md:mt-0">
+                                <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                                    Active
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Tabs */}
-                <div className="mb-6">
-                    <nav className="flex space-x-4" aria-label="Tabs">
-                        {[
-                            { id: 'overview', label: 'Overview', icon: BookOpen },
-                            { id: 'attendance', label: 'My Attendance', icon: ClipboardCheck },
-                            { id: 'announcements', label: 'Announcements', icon: Bell },
-                            { id: 'timetable', label: 'Timetable', icon: Calendar }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${
-                                    activeTab === tab.id
-                                        ? 'bg-indigo-100 text-indigo-700'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                <tab.icon className="mr-2 w-5 h-5" />
-                                {tab.label}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
+                    {/* Tabs */}
+                    <div className="mb-6">
+                        <nav className="flex overflow-x-auto pb-2 space-x-4" aria-label="Tabs">
+                            {[
+                                { id: 'overview', label: 'Overview', icon: BookOpen },
+                                { id: 'announcements', label: 'Announcements', icon: Bell },
+                                { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
+                                { id: 'timetable', label: 'Timetable', icon: Calendar },
+                                { id: 'tests', label: 'Test Results', icon: Award }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium ${
+                                        activeTab === tab.id
+                                            ? 'bg-indigo-100 text-indigo-700'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    <tab.icon className="mr-2 w-5 h-5" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
 
-                {/* Tab Content */}
-                {renderTabContent()}
-            </div>
+                    {/* Tab Content */}
+                    {activeTab === 'tests' ? (
+                        <>
+                            <TestResultsDebug 
+                                batchId={batchId} 
+                                studentId={userData?.id} 
+                                isParentView={false} 
+                            />
+                            <TestResultsViewer 
+                                batchId={batchId} 
+                                studentId={userData?.id} 
+                            />
+                        </>
+                    ) : (
+                        renderTabContent()
+                    )}
+                </div>
+            ) : (
+                <div className="container mx-auto px-4 py-12 text-center">
+                    <p className="text-gray-500">No batch information available.</p>
+                    <div className="mt-6">
+                        <Link to="/student/batches" className="text-indigo-600 hover:text-indigo-800">
+                            ← Back to My Batches
+                        </Link>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
