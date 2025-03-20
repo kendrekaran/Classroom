@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, ClipboardCheck, Bell, Award, AlertCircle } from 'lucide-react';
+import { Users, Calendar, BookOpen, ArrowLeft, Mail, User, ClipboardCheck, Bell, Award, AlertCircle, DollarSign } from 'lucide-react';
 import axios from 'axios';
 import ParentNavbar from '../../components/ParentNavbar';
 import ParentAttendanceView from '../../components/ParentAttendanceView';
 import TimetableViewer from '../../components/TimetableViewer';
 import TestResultsViewer from '../../components/TestResultsViewer';
 import TestResultsDebug from '../../components/TestResultsDebug';
+import ParentFeesView from '../../components/ParentFeesView';
 
 function ParentBatchDetail() {
     const [batch, setBatch] = useState(null);
@@ -201,6 +202,20 @@ function ParentBatchDetail() {
                     </div>
                 );
 
+            case 'tests':
+                return (
+                    <TestResultsViewer 
+                        batchId={batchId} 
+                        studentId={studentId} 
+                        isParentView={true}
+                    />
+                );
+
+            case 'fees':
+                return (
+                    <ParentFeesView batchId={batchId} studentId={studentId} />
+                );
+
             default:
                 return null;
         }
@@ -245,29 +260,30 @@ function ParentBatchDetail() {
                 </Link>
 
                 {/* Tabs */}
-                <div className="mb-6">
-                    <nav className="flex overflow-x-auto pb-2 space-x-4" aria-label="Tabs">
+                <div className="mb-6 border-b border-gray-200">
+                    <div className="flex flex-wrap -mb-px">
                         {[
-                            { id: 'overview', label: 'Overview', icon: BookOpen },
-                            { id: 'announcements', label: 'Announcements', icon: Bell },
-                            { id: 'attendance', label: 'Attendance', icon: ClipboardCheck },
-                            { id: 'timetable', label: 'Timetable', icon: Calendar },
-                            { id: 'tests', label: 'Test Results', icon: Award }
+                            { id: 'overview', label: 'Overview', icon: <BookOpen className="w-4 h-4 mr-2" /> },
+                            { id: 'announcements', label: 'Announcements', icon: <Bell className="w-4 h-4 mr-2" /> },
+                            { id: 'attendance', label: 'Attendance', icon: <ClipboardCheck className="w-4 h-4 mr-2" /> },
+                            { id: 'timetable', label: 'Timetable', icon: <Calendar className="w-4 h-4 mr-2" /> },
+                            { id: 'tests', label: 'Test Results', icon: <Award className="w-4 h-4 mr-2" /> },
+                            { id: 'fees', label: 'Fees', icon: <DollarSign className="w-4 h-4 mr-2" /> }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium ${
+                                className={`flex items-center text-sm font-medium px-4 py-3 border-b-2 ${
                                     activeTab === tab.id
-                                        ? 'bg-indigo-100 text-indigo-700'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'text-indigo-600 border-indigo-600'
+                                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
                                 }`}
                             >
-                                <tab.icon className="mr-2 w-5 h-5" />
+                                {tab.icon}
                                 {tab.label}
                             </button>
                         ))}
-                    </nav>
+                    </div>
                 </div>
 
                 {/* Tab Content */}

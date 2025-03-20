@@ -55,7 +55,7 @@ function TeacherLoginPage() {
     <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link 
-          to="/" 
+          to="/teacher" 
           className="flex items-center text-gray-500 hover:text-red-600 mb-8 mx-4 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
