@@ -57,19 +57,19 @@ function UserSignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
+    <div className="flex justify-center items-center p-4 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="overflow-hidden w-full max-w-md bg-white rounded-xl shadow-xl">
         {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6">
+        <div className="p-6 bg-gradient-to-r from-indigo-500 to-indigo-600">
           <div className="flex justify-center">
-            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-md">
-              <UserPlus className="h-8 w-8 text-indigo-600" />
+            <div className="flex justify-center items-center w-16 h-16 bg-white rounded-full shadow-md">
+              <UserPlus className="w-8 h-8 text-indigo-600" />
             </div>
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-white text-center">
+          <h1 className="mt-4 text-2xl font-bold text-center text-white">
             Create Your Account
           </h1>
-          <p className="text-indigo-100 text-center mt-1">
+          <p className="mt-1 text-center text-indigo-100">
             Join our learning platform
           </p>
         </div>
@@ -77,7 +77,7 @@ function UserSignupPage() {
         {/* Signup Form */}
         <div className="p-8">
           {error && (
-            <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="p-3 mb-6 text-sm text-red-700 bg-red-50 rounded-lg">
               {error}
             </div>
           )}
@@ -93,8 +93,8 @@ function UserSignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your full name"
+                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter Student full name"
               />
             </div>
 
@@ -108,8 +108,8 @@ function UserSignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your email"
+                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter Student email"
               />
             </div>
 
@@ -123,7 +123,7 @@ function UserSignupPage() {
                 required
                 value={parentEmail}
                 onChange={(e) => setParentEmail(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter parent's email"
               />
             </div>
@@ -138,7 +138,7 @@ function UserSignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Create a password"
               />
             </div>
@@ -147,8 +147,7 @@ function UserSignupPage() {
               type="submit"
               disabled={loading}
               className={`w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 ${
-                loading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+                loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>

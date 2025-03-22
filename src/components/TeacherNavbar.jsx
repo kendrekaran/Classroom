@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, LogOut, User, LogIn } from 'lucide-react';
+import DarkModeToggle from './DarkModeToggle';
+import { useDarkMode } from '../utils/DarkModeContext';
 
 function TeacherNavbar() {
     const [user, setUser] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const navigate = useNavigate();
+    const { darkMode } = useDarkMode();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,8 +41,12 @@ function TeacherNavbar() {
         <header>
             <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
                 isScrolled 
-                    ? 'py-2 bg-white border-b border-gray-200 shadow-md' 
-                    : 'py-4 bg-white'
+                    ? darkMode 
+                        ? 'py-2 bg-gray-900 border-b border-gray-700 shadow-md' 
+                        : 'py-2 bg-white border-b border-gray-200 shadow-md'
+                    : darkMode 
+                        ? 'py-4 bg-gray-900' 
+                        : 'py-4 bg-white'
             }`}>
                 <div className="container px-4 mx-auto max-w-7xl">
                     <div className="flex justify-between items-center h-16">
@@ -48,10 +55,10 @@ function TeacherNavbar() {
                                 <BookOpen className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex flex-col">
-                                <h1 className="text-xl font-bold text-gray-800">
+                                <h1 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                                     TeacherPortal
                                 </h1>
-                                <span className="text-xs font-medium text-gray-500">For Passionate Educators</span>
+                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>For Passionate Educators</span>
                             </div>
                         </Link>
 
@@ -63,7 +70,7 @@ function TeacherNavbar() {
                                 <Link
                                     key={path}
                                     to={path}
-                                    className="relative font-medium text-gray-700 transition-colors hover:text-red-600"
+                                    className={`relative font-medium ${darkMode ? 'text-gray-300 hover:text-red-400' : 'text-gray-700 hover:text-red-600'} transition-colors`}
                                 >
                                     <span className="relative pb-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-red-600 after:transition-all after:duration-300 hover:after:w-full">
                                         {name}
@@ -72,40 +79,52 @@ function TeacherNavbar() {
                             ))}
                         </div>
 
-                        {user ? (
-                            <div className="flex items-center space-x-4">
-                                <div className="flex items-center p-2 bg-gray-50 rounded-full border border-gray-100">
-                                    <div className="flex justify-center items-center w-8 h-8 bg-red-50 rounded-full">
-                                        <User className="w-4 h-4 text-red-600" />
+                        <div className="flex items-center space-x-4">
+                            <DarkModeToggle />
+                            
+                            {user ? (
+                                <div className="flex items-center space-x-4">
+                                    <div className={`flex items-center p-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-100'} rounded-full border`}>
+                                        <div className="flex justify-center items-center w-8 h-8 bg-red-50 rounded-full">
+                                            <User className="w-4 h-4 text-red-600" />
+                                        </div>
+                                        <span className={`ml-2 text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{user.name || "Teacher"}</span>
                                     </div>
-                                    <span className="ml-2 text-sm font-medium text-gray-800">{user.name || "Teacher"}</span>
+                                    <button 
+                                        onClick={handleLogout}
+                                        className={`flex items-center px-4 py-2 space-x-2 ${
+                                            darkMode 
+                                                ? 'text-gray-300 bg-gray-800 border-gray-700 hover:bg-red-900 hover:text-red-400 hover:border-red-800' 
+                                                : 'text-gray-700 bg-gray-50 border-gray-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100'
+                                        } rounded-lg border transition-colors duration-300`}
+                                    >
+                                        <span className="text-sm font-medium">Logout</span>
+                                        <LogOut className="w-4 h-4" />
+                                    </button>
                                 </div>
-                                <button 
-                                    onClick={handleLogout}
-                                    className="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-gray-50 rounded-lg border border-gray-100 transition-colors duration-300 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
-                                >
-                                    <span className="text-sm font-medium">Logout</span>
-                                    <LogOut className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center space-x-4">
-                                <Link
-                                    to="/teacher/login"
-                                    className="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-gray-50 rounded-lg border border-gray-100 transition-colors duration-300 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
-                                >
-                                    <span className="text-sm font-medium">Login</span>
-                                    <LogIn className="w-4 h-4" />
-                                </Link>
-                                <Link
-                                    to="/teacher/signup"
-                                    className="flex items-center px-4 py-2 space-x-2 text-white bg-red-600 rounded-lg transition-colors duration-300 hover:bg-red-700"
-                                >
-                                    <span className="text-sm font-medium">Signup</span>
-                                    <User className="w-4 h-4" />
-                                </Link>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="flex items-center space-x-4">
+                                    <Link
+                                        to="/teacher/login"
+                                        className={`flex items-center px-4 py-2 space-x-2 ${
+                                            darkMode 
+                                                ? 'text-gray-300 bg-gray-800 border-gray-700 hover:bg-red-900 hover:text-red-400 hover:border-red-800' 
+                                                : 'text-gray-700 bg-gray-50 border-gray-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100'
+                                        } rounded-lg border transition-colors duration-300`}
+                                    >
+                                        <span className="text-sm font-medium">Login</span>
+                                        <LogIn className="w-4 h-4" />
+                                    </Link>
+                                    <Link
+                                        to="/teacher/signup"
+                                        className="flex items-center px-4 py-2 space-x-2 text-white bg-red-600 rounded-lg transition-colors duration-300 hover:bg-red-700"
+                                    >
+                                        <span className="text-sm font-medium">Signup</span>
+                                        <User className="w-4 h-4" />
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </nav>
