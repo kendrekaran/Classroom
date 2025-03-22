@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { DollarSign, Check, X, AlertCircle, Edit, Search } from 'lucide-react';
+import { useDarkMode } from '../utils/DarkModeContext';
 
 function FeesManager({ batchId }) {
     const [loading, setLoading] = useState(true);
@@ -19,6 +20,7 @@ function FeesManager({ batchId }) {
         status: 'paid',
         remarks: ''
     });
+    const { darkMode } = useDarkMode();
 
     // API base URL
     const API_BASE_URL = 'http://localhost:3000';
@@ -271,9 +273,9 @@ function FeesManager({ batchId }) {
     // Show error message if there's an error
     if (error && !isModalOpen) {
         return (
-            <div className="overflow-hidden bg-white rounded-lg shadow-sm">
-                <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">Fees Management</h2>
+            <div className={`overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
+                <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Fees Management</h2>
                 </div>
                 <div className="p-6 text-red-700 bg-red-50">
                     <p className="flex items-center">
@@ -292,24 +294,28 @@ function FeesManager({ batchId }) {
     }
 
     return (
-        <div className="overflow-hidden bg-white rounded-lg shadow-sm">
-            <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Fees Management</h2>
-                <p className="mt-1 text-sm text-gray-500">
+        <div className={`overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
+            <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h2 className={`text-lg font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>Fees Management</h2>
+                <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     Track and manage student fee payments
                 </p>
             </div>
 
             {/* Search Bar */}
-            <div className="p-4 border-b border-gray-200">
+            <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="relative">
                     <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                        <Search className="w-5 h-5 text-gray-400" />
+                        <Search className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     </div>
                     <input
                         type="text"
                         placeholder="Search students by name or email"
-                        className="py-2 pr-4 pl-10 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`py-2 pr-4 pl-10 w-full rounded-lg border ${
+                            darkMode 
+                                ? 'bg-gray-700 border-gray-600 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500' 
+                                : 'border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                        }`}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -319,47 +325,47 @@ function FeesManager({ batchId }) {
             {/* Students List with Fees Status */}
             <div className="overflow-x-auto">
                 {students.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
+                    <div className={`p-6 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         No students found in this batch.
                     </div>
                 ) : filteredStudents.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
+                    <div className={`p-6 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         No students match your search.
                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                        <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
                                     Student
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
                                     Payment Status
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
                                     Amount
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
                                     Method
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className={`${darkMode ? 'bg-gray-800 divide-y divide-gray-700' : 'bg-white divide-y divide-gray-200'}`}>
                             {filteredStudents.map((student) => {
                                 const payment = getPaymentStatus(student._id);
                                 
                                 return (
-                                    <tr key={student._id} className="hover:bg-gray-50">
+                                    <tr key={student._id} className={darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div>
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                                         {student.name}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
+                                                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                         {student.email}
                                                     </div>
                                                 </div>
@@ -378,19 +384,19 @@ function FeesManager({ batchId }) {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
+                                            <div className={`text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                                 {payment ? `₹${payment.amount}` : '-'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
+                                            <div className={`text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                                 {payment ? payment.paymentMethod.charAt(0).toUpperCase() + payment.paymentMethod.slice(1) : '-'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                             <button
                                                 onClick={() => handleOpenModal(student)}
-                                                className="inline-flex items-center text-red-600 hover:text-red-900"
+                                                className={`inline-flex items-center ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'}`}
                                             >
                                                 <Edit className="mr-1 w-4 h-4" />
                                                 {payment ? 'Update' : 'Add Payment'}
@@ -407,14 +413,14 @@ function FeesManager({ batchId }) {
             {/* Payment Modal */}
             {isModalOpen && selectedStudent && (
                 <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
-                    <div className="overflow-hidden mx-auto w-full max-w-md bg-white rounded-lg shadow-lg">
-                        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                            <h3 className="text-lg font-medium text-gray-900">
+                    <div className={`overflow-hidden mx-auto w-full max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg`}>
+                        <div className={`px-6 py-4 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b`}>
+                            <h3 className={`text-lg font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                 {feesPayments.some(p => p.student && p.student._id === selectedStudent._id) 
                                     ? 'Update Payment Record' 
                                     : 'Add Payment Record'}
                             </h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                 Student: {selectedStudent.name}
                             </p>
                         </div>
@@ -430,7 +436,7 @@ function FeesManager({ batchId }) {
                         
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">
+                                <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                     Amount (₹)
                                 </label>
                                 <input
@@ -440,12 +446,16 @@ function FeesManager({ batchId }) {
                                     onChange={handleInputChange}
                                     required
                                     min="1"
-                                    className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className={`px-3 py-2 w-full rounded-md border ${
+                                        darkMode 
+                                            ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                            : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                    }`}
                                 />
                             </div>
                             
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">
+                                <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                     Payment Method
                                 </label>
                                 <select
@@ -453,7 +463,11 @@ function FeesManager({ batchId }) {
                                     value={paymentForm.paymentMethod}
                                     onChange={handleInputChange}
                                     required
-                                    className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className={`px-3 py-2 w-full rounded-md border ${
+                                        darkMode 
+                                            ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                            : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                    }`}
                                 >
                                     <option value="offline">Offline</option>
                                     <option value="online">Online</option>
@@ -461,7 +475,7 @@ function FeesManager({ batchId }) {
                             </div>
                             
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">
+                                <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                     Status
                                 </label>
                                 <select
@@ -469,7 +483,11 @@ function FeesManager({ batchId }) {
                                     value={paymentForm.status}
                                     onChange={handleInputChange}
                                     required
-                                    className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className={`px-3 py-2 w-full rounded-md border ${
+                                        darkMode 
+                                            ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                            : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                    }`}
                                 >
                                     <option value="paid">Paid</option>
                                     <option value="pending">Pending</option>
@@ -478,7 +496,7 @@ function FeesManager({ batchId }) {
                             </div>
                             
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">
+                                <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                     Remarks (Optional)
                                 </label>
                                 <textarea
@@ -486,7 +504,11 @@ function FeesManager({ batchId }) {
                                     value={paymentForm.remarks}
                                     onChange={handleInputChange}
                                     rows="3"
-                                    className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className={`px-3 py-2 w-full rounded-md border ${
+                                        darkMode 
+                                            ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                            : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                    }`}
                                     placeholder="Add any additional notes..."
                                 ></textarea>
                             </div>
@@ -495,7 +517,11 @@ function FeesManager({ batchId }) {
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50"
+                                    className={`px-4 py-2 text-sm font-medium ${
+                                        darkMode 
+                                            ? 'text-gray-300 bg-gray-700 border-gray-600 hover:bg-gray-600' 
+                                            : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
+                                    } rounded-md border`}
                                     disabled={submitting}
                                 >
                                     Cancel

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 import axios from 'axios';
+import { useDarkMode } from '../../utils/DarkModeContext';
+import ThemeToggle from '../../components/ThemeToggle';
 
 
 function UserLoginPage() {
@@ -12,6 +14,7 @@ function UserLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,8 +49,13 @@ function UserLoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center p-4 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="overflow-hidden w-full max-w-md bg-white rounded-xl shadow-xl">
+    <div className={`flex justify-center items-center p-4 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
+      <div className={`overflow-hidden w-full max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl`}>
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        
         {/* Header with gradient */}
         <div className="p-6 bg-gradient-to-r from-indigo-500 to-indigo-600">
           <div className="flex justify-center">
@@ -76,7 +84,7 @@ function UserLoginPage() {
           
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Email Address
               </label>
               <input
@@ -85,13 +93,13 @@ function UserLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`px-4 py-3 mt-1 w-full ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-gray-50'} rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Password
               </label>
               <input
@@ -100,7 +108,7 @@ function UserLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="px-4 py-3 mt-1 w-full bg-gray-50 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`px-4 py-3 mt-1 w-full ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-gray-50'} rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                 placeholder="Enter your password"
               />
             </div>
@@ -115,13 +123,13 @@ function UserLoginPage() {
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Are you a parent?{' '}
               <Link to="/parent/login" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Login here
               </Link>
             </p>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Don't have an account?{' '}
               <Link to="/user/register" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Sign up

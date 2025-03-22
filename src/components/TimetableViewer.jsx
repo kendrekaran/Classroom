@@ -65,6 +65,9 @@ function TimetableViewer({ batchId, userType = 'student' }) {
             }
 
             const { token } = JSON.parse(userData);
+            
+            console.log(`Fetching timetable from: ${endpoint}`);
+            
             const response = await axios.get(
                 endpoint,
                 {
@@ -74,8 +77,16 @@ function TimetableViewer({ batchId, userType = 'student' }) {
                 }
             );
 
+            console.log('Timetable API response:', response.data);
+
             if (response.data.success) {
                 setTimetable(response.data.timetable);
+                
+                // Debug log to check the structure of a day's entries
+                const firstDay = days.find(day => response.data.timetable[day]?.length > 0);
+                if (firstDay) {
+                    console.log(`Sample period from ${firstDay}:`, response.data.timetable[firstDay][0]);
+                }
             } else {
                 setError('Failed to fetch timetable');
             }
@@ -89,8 +100,17 @@ function TimetableViewer({ batchId, userType = 'student' }) {
 
     const formatTime = (timeString) => {
         try {
+            if (!timeString) return 'N/A';
+            
+            console.log('Formatting time:', timeString);
+            
             const [hours, minutes] = timeString.split(':');
             const hour = parseInt(hours, 10);
+            
+            if (isNaN(hour)) {
+                console.warn('Invalid hour value:', hours);
+                return timeString || 'N/A';
+            }
             
             if (hour === 0) {
                 return `12:${minutes} AM`;
@@ -102,6 +122,7 @@ function TimetableViewer({ batchId, userType = 'student' }) {
                 return `${hour - 12}:${minutes} PM`;
             }
         } catch (e) {
+            console.error('Error formatting time:', e, 'Original timeString:', timeString);
             return timeString || 'N/A';
         }
     };
@@ -117,7 +138,7 @@ function TimetableViewer({ batchId, userType = 'student' }) {
             </h2>
 
             {/* Day Selector */}
-            <div className="mb-6 overflow-x-auto">
+            <div className="overflow-x-auto mb-6">
                 <div className="flex space-x-1">
                     {days.map(day => (
                         <button
@@ -142,16 +163,16 @@ function TimetableViewer({ batchId, userType = 'student' }) {
 
             {/* Loading & Error States */}
             {loading && (
-                <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-t-2 border-gray-500 border-t-indigo-600"></div>
+                <div className="py-8 text-center">
+                    <div className="inline-block w-8 h-8 rounded-full border-2 border-t-2 border-gray-500 animate-spin border-t-indigo-600"></div>
                     <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Loading timetable...</p>
                 </div>
             )}
 
             {error && !loading && (
-                <div className={`p-4 rounded-md ${darkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700'}`}>
+                <div className={`p-4 rounded-md ${darkMode ? 'text-red-300 bg-red-900/30' : 'text-red-700 bg-red-50'}`}>
                     <div className="flex">
-                        <AlertCircle className="h-5 w-5 mr-2" />
+                        <AlertCircle className="mr-2 w-5 h-5" />
                         {error}
                     </div>
                 </div>
@@ -181,8 +202,8 @@ function TimetableViewer({ batchId, userType = 'student' }) {
                                             
                                             <div className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 <div className="flex items-center">
-                                                    <Clock className="mr-1 h-4 w-4 text-indigo-500" />
-                                                    {formatTime(period.start_time)} - {formatTime(period.end_time)}
+                                                    <Clock className="mr-1 w-4 h-4 text-indigo-500" />
+                                                    {formatTime(period.startTime)} - {formatTime(period.endTime)}
                                                 </div>
                                             </div>
                                         </div>

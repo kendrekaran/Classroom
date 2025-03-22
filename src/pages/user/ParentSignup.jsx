@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import axios from 'axios';
 import { z } from 'zod';
+import { useDarkMode } from '../../utils/DarkModeContext';
 
 const parentRegisterSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -18,6 +19,7 @@ function ParentSignupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,8 +56,8 @@ function ParentSignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-xl overflow-hidden">
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} p-4`}>
+      <div className={`max-w-md w-full ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl overflow-hidden`}>
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6">
           <div className="flex justify-center">
@@ -81,7 +83,7 @@ function ParentSignupPage() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Full Name
               </label>
               <input
@@ -90,13 +92,17 @@ function ParentSignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`mt-1 w-full px-4 py-3 rounded-lg border ${
+                  darkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500' 
+                    : 'bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                }`}
                 placeholder="Enter your full name"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Email Address
               </label>
               <input
@@ -105,13 +111,17 @@ function ParentSignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`mt-1 w-full px-4 py-3 rounded-lg border ${
+                  darkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500' 
+                    : 'bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                }`}
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Password
               </label>
               <input
@@ -120,7 +130,11 @@ function ParentSignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full px-4 py-3 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`mt-1 w-full px-4 py-3 rounded-lg border ${
+                  darkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500' 
+                    : 'bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                }`}
                 placeholder="Create a password"
               />
             </div>
@@ -137,7 +151,7 @@ function ParentSignupPage() {
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Registering as a student?{' '}
               <Link
                 to="/user/signup"
@@ -146,7 +160,7 @@ function ParentSignupPage() {
                 Sign up as student
               </Link>
             </p>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Already have an account?{' '}
               <Link
                 to="/user/login"

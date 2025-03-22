@@ -259,133 +259,240 @@ function AttendanceMarker({ batchId, students }) {
     };
 
     return (
-        <div className={darkMode ? 'text-gray-100' : 'text-gray-900'}>
-            <div className="space-y-6">
-                <div className="p-6 bg-white rounded-lg shadow-sm">
-                    <h2 className="mb-4 text-lg font-semibold">{isEditing ? 'Edit Attendance' : 'Mark Attendance'}</h2>
-                    
-                    {error && (
-                        <div className="p-3 mb-4 text-sm text-red-700 bg-red-50 rounded-md">
-                            {error}
-                        </div>
-                    )}
-                    
-                    {success && (
-                        <div className="p-3 mb-4 text-sm text-green-700 bg-green-50 rounded-md">
-                            {success}
-                        </div>
-                    )}
-                    
-                    <div className="mb-4">
-                        <label className={`block mb-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            Date
-                        </label>
-                        <div className="flex space-x-4">
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => handleDateChange(e.target.value)}
-                                className={`rounded-md shadow-sm border focus:ring focus:ring-indigo-500 focus:border-indigo-500 ${
-                                    darkMode 
-                                        ? 'text-gray-100 bg-gray-800 border-gray-700' 
-                                        : 'border-gray-300'
-                                }`}
-                            />
-                            {existingAttendanceForDate && !isEditing ? (
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleEditAttendance(existingAttendanceForDate)}
-                                        className="inline-flex items-center px-3 py-1 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent hover:bg-indigo-700"
-                                    >
-                                        <Edit size={16} className="mr-1" /> Edit
-                                    </button>
-                                    <button
-                                        onClick={() => confirmDelete(existingAttendanceForDate._id)}
-                                        className="inline-flex items-center px-3 py-1 text-sm font-medium leading-4 text-white bg-red-600 rounded-md border border-transparent hover:bg-red-700"
-                                    >
-                                        <Trash2 size={16} className="mr-1" /> Delete
-                                    </button>
-                                </div>
-                            ) : null}
-                        </div>
-                        {existingAttendanceForDate && !isEditing && (
-                            <p className={`mt-2 text-sm ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                                Attendance already marked for this date
-                            </p>
-                        )}
+        <div className="space-y-6">
+            <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
+                <h2 className={`mb-4 text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>{isEditing ? 'Edit Attendance' : 'Mark Attendance'}</h2>
+                
+                {error && (
+                    <div className="p-3 mb-4 text-sm text-red-700 bg-red-50 rounded-md">
+                        {error}
                     </div>
-                    
+                )}
+                
+                {success && (
+                    <div className="p-3 mb-4 text-sm text-green-700 bg-green-50 rounded-md">
+                        {success}
+                    </div>
+                )}
+                
+                <div className="mb-4">
+                    <label htmlFor="date" className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Date
+                    </label>
+                    <input
+                        type="date"
+                        id="date"
+                        value={date}
+                        onChange={(e) => handleDateChange(e.target.value)}
+                        className={`block w-full rounded-md ${
+                            darkMode 
+                                ? 'bg-gray-700 text-white border-gray-600 focus:border-red-500 focus:ring-red-500' 
+                                : 'border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500'
+                        } sm:text-sm`}
+                        disabled={isEditing}
+                    />
+                    {existingAttendanceForDate && !isEditing && (
+                        <p className="mt-1 text-sm text-blue-600">
+                            Attendance for this date already exists. You can view or edit it.
+                        </p>
+                    )}
+                </div>
+                
+                <div className="overflow-x-auto">
+                    <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                        <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
+                            <tr>
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                    Student
+                                </th>
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                    Status
+                                </th>
+                                <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                    Remarks
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className={`${darkMode ? 'bg-gray-800 divide-y divide-gray-700' : 'bg-white divide-y divide-gray-200'}`}>
+                            {students.map(student => {
+                                const attendanceRecord = attendance.find(a => a.student_id === student._id);
+                                return (
+                                    <tr key={student._id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{student.name}</div>
+                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{student.email}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex space-x-2">
+                                                {existingAttendanceForDate && !isEditing ? (
+                                                    <div className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                                                        attendanceRecord?.status === 'present' 
+                                                        ? 'bg-green-100 text-green-800 border-green-200' 
+                                                        : 'bg-red-100 text-red-800 border-red-200'
+                                                    }`}>
+                                                        {attendanceRecord?.status === 'present' ? (
+                                                            <>
+                                                                <Check className="mr-1 w-4 h-4" />
+                                                                Present
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <X className="mr-1 w-4 h-4" />
+                                                                Absent
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleAttendanceChange(student._id, 'present')}
+                                                            className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                                                                attendanceRecord?.status === 'present'
+                                                                    ? 'bg-green-100 text-green-800 border-green-200'
+                                                                    : darkMode 
+                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600' 
+                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            <Check className="mr-1 w-4 h-4" />
+                                                            Present
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleAttendanceChange(student._id, 'absent')}
+                                                            className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                                                                attendanceRecord?.status === 'absent'
+                                                                    ? 'bg-red-100 text-red-800 border-red-200'
+                                                                    : darkMode 
+                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600' 
+                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            <X className="mr-1 w-4 h-4" />
+                                                            Absent
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <input
+                                                type="text"
+                                                value={attendanceRecord?.remarks || ''}
+                                                onChange={(e) => handleRemarkChange(student._id, e.target.value)}
+                                                placeholder="Optional remarks"
+                                                className={`block w-full rounded-md ${
+                                                    darkMode 
+                                                        ? 'bg-gray-700 text-white border-gray-600 focus:border-red-500 focus:ring-red-500' 
+                                                        : 'border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500'
+                                                } sm:text-sm`}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div className="flex justify-end mt-4 space-x-3">
+                    {isEditing && (
+                        <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className={`inline-flex items-center px-4 py-2 text-sm font-medium ${
+                                darkMode 
+                                    ? 'text-gray-300 bg-gray-700 border-gray-600 hover:bg-gray-600' 
+                                    : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
+                            } rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
+                        >
+                            Cancel
+                        </button>
+                    )}
+                    {existingAttendanceForDate && !isEditing ? (
+                        <button
+                            type="button"
+                            onClick={() => handleEditAttendance(existingAttendanceForDate)}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <Edit className="mr-2 w-4 h-4" />
+                            Edit Attendance
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                            <Save className="mr-2 w-4 h-4" />
+                            {loading ? 'Processing...' : (isEditing ? 'Update Attendance' : (existingAttendanceForDate ? 'Update Attendance' : 'Mark Attendance'))}
+                        </button>
+                    )}
+                </div>
+            </div>
+            
+            {/* Previous Attendance Records */}
+            {attendanceRecords.length > 0 && (
+                <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
+                    <h2 className={`mb-4 text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>Previous Attendance Records</h2>
                     <div className="overflow-x-auto">
                         <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                            <thead className={darkMode ? 'bg-gray-800' : 'bg-gray-50'}>
+                            <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                                 <tr>
-                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                        Student
+                                    <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                        Date
                                     </th>
-                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                        Status
+                                    <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                        Present/Total
                                     </th>
-                                    <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                        Remarks
+                                    <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                        Marked By
+                                    </th>
+                                    <th scope="col" className={`px-6 py-3 text-xs font-medium tracking-wider text-left ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase`}>
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className={`divide-y ${darkMode ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'}`}>
-                                {students.map((student) => {
-                                    const attendanceEntry = attendance.find(
-                                        a => a.student_id === student._id
-                                    );
-                                    const status = attendanceEntry ? attendanceEntry.status : 'present';
-                                    const remarks = attendanceEntry ? attendanceEntry.remarks : '';
-                                    
+                            <tbody className={`${darkMode ? 'bg-gray-800 divide-y divide-gray-700' : 'bg-white divide-y divide-gray-200'}`}>
+                                {attendanceRecords.map(record => {
+                                    const presentCount = record.records.filter(r => r.status === 'present').length;
+                                    const totalCount = record.records.length;
                                     return (
-                                        <tr key={student._id}>
-                                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
-                                                {student.name}
+                                        <tr key={record._id}>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={darkMode ? 'text-gray-200' : ''}>
+                                                    {new Date(record.date).toLocaleDateString()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={darkMode ? 'text-gray-200' : ''}>
+                                                    {presentCount}/{totalCount} ({Math.round((presentCount/totalCount) * 100)}%)
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={darkMode ? 'text-gray-200' : ''}>
+                                                    {record.marked_by?.name || 'Unknown'}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        type="button"
-                                                        onClick={() => handleAttendanceChange(student._id, 'present')}
-                                                        className={`flex items-center px-2 py-1 rounded ${
-                                                            status === 'present' 
-                                                                ? 'bg-green-600 text-white' 
-                                                                : `${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`
-                                                        }`}
-                                                        disabled={existingAttendanceForDate && !isEditing}
+                                                        onClick={() => handleEditAttendance(record)}
+                                                        className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-900'}`}
+                                                        title="Edit attendance"
                                                     >
-                                                        <Check size={14} className="mr-1" />
-                                                        Present
+                                                        <Edit className="w-5 h-5" />
                                                     </button>
                                                     <button
-                                                        type="button"
-                                                        onClick={() => handleAttendanceChange(student._id, 'absent')}
-                                                        className={`flex items-center px-2 py-1 rounded ${
-                                                            status === 'absent' 
-                                                                ? 'bg-red-600 text-white' 
-                                                                : `${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`
-                                                        }`}
-                                                        disabled={existingAttendanceForDate && !isEditing}
+                                                        onClick={() => confirmDelete(record._id)}
+                                                        className={`${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'}`}
+                                                        title="Delete attendance"
                                                     >
-                                                        <X size={14} className="mr-1" />
-                                                        Absent
+                                                        <Trash2 className="w-5 h-5" />
                                                     </button>
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <input
-                                                    type="text"
-                                                    value={remarks}
-                                                    onChange={(e) => handleRemarkChange(student._id, e.target.value)}
-                                                    placeholder="Add remarks"
-                                                    className={`border rounded-md shadow-sm px-3 py-1 focus:ring focus:ring-indigo-500 focus:border-indigo-500 ${
-                                                        darkMode 
-                                                            ? 'placeholder-gray-400 text-gray-100 bg-gray-700 border-gray-600' 
-                                                            : 'border-gray-300'
-                                                    }`}
-                                                    disabled={existingAttendanceForDate && !isEditing}
-                                                />
                                             </td>
                                         </tr>
                                     );
@@ -393,176 +500,42 @@ function AttendanceMarker({ batchId, students }) {
                             </tbody>
                         </table>
                     </div>
-                    
-                    <div className="flex items-center mt-6">
-                        {isEditing ? (
-                            <div className="flex space-x-3">
-                                <button
-                                    type="button"
-                                    onClick={handleSubmit}
-                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Saving...' : 'Save Changes'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={cancelEdit}
-                                    className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm ${
-                                        darkMode 
-                                            ? 'text-gray-300 bg-gray-700 border-gray-600 hover:bg-gray-600' 
-                                            : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleSubmit}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                disabled={loading || existingAttendanceForDate}
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="mr-2 -ml-1 w-4 h-4 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Submitting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save size={16} className="mr-2" /> Mark Attendance
-                                    </>
-                                )}
-                            </button>
-                        )}
-                    </div>
                 </div>
-                
-                {/* Previous Attendance Records */}
-                {attendanceRecords.length > 0 && (
-                    <div className="p-6 bg-white rounded-lg shadow-sm">
-                        <h2 className="mb-4 text-lg font-semibold">Previous Attendance Records</h2>
-                        <div className="overflow-x-auto">
-                            <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                                <thead className={darkMode ? 'bg-gray-800' : 'bg-gray-50'}>
-                                    <tr>
-                                        <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                            Date
-                                        </th>
-                                        <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                            Present
-                                        </th>
-                                        <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                            Absent
-                                        </th>
-                                        <th scope="col" className={`px-6 py-3 text-left text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${darkMode ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'}`}>
-                                    {attendanceRecords
-                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                                        .map((record) => {
-                                            const presentCount = record.records.filter(r => r.status === 'present').length;
-                                            const absentCount = record.records.filter(r => r.status === 'absent').length;
-                                            
-                                            return (
-                                                <tr key={record._id}>
-                                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
-                                                        {new Date(record.date).toLocaleDateString()}
-                                                    </td>
-                                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                                                        darkMode 
-                                                            ? 'text-green-400' 
-                                                            : 'text-green-600'
-                                                    }`}>
-                                                        {presentCount}
-                                                    </td>
-                                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                                                        darkMode 
-                                                            ? 'text-red-400' 
-                                                            : 'text-red-600'
-                                                    }`}>
-                                                        {absentCount}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm whitespace-nowrap">
-                                                        <div className="flex space-x-2">
-                                                            <button
-                                                                onClick={() => handleEditAttendance(record)}
-                                                                className="text-indigo-600 hover:text-indigo-900"
-                                                            >
-                                                                <Edit size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => confirmDelete(record._id)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
             
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-                <div className="overflow-y-auto fixed inset-0 z-50">
-                    <div className="flex justify-center items-center px-4 pt-4 pb-20 min-h-screen text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+                    <div className={`p-6 w-full max-w-md ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white'} rounded-lg`}>
+                        <div className="flex items-center mb-4 text-red-600">
+                            <AlertCircle className="mr-2 w-6 h-6" />
+                            <h3 className="text-lg font-medium">Confirm Deletion</h3>
                         </div>
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div className={`inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                            <div className={`px-4 pt-5 pb-4 sm:p-6 sm:pb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                                <div className="sm:flex sm:items-start">
-                                    <div className="flex flex-shrink-0 justify-center items-center mx-auto w-12 h-12 bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
-                                        <AlertCircle className="w-6 h-6 text-red-600" />
-                                    </div>
-                                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className={`text-lg leading-6 font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            Delete Attendance Record
-                                        </h3>
-                                        <div className="mt-2">
-                                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-                                                Are you sure you want to delete this attendance record? This action cannot be undone.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={`px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse ${darkMode ? 'bg-gray-800 border-t border-gray-700' : 'bg-gray-50'}`}>
-                                <button
-                                    type="button"
-                                    onClick={handleDeleteAttendance}
-                                    className="inline-flex justify-center px-4 py-2 w-full text-base font-medium text-white bg-red-600 rounded-md border border-transparent shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                    disabled={deleteLoading}
-                                >
-                                    {deleteLoading ? 'Deleting...' : 'Delete'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowDeleteModal(false)}
-                                    className={`mt-3 w-full inline-flex justify-center rounded-md border px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm ${
-                                        darkMode
-                                            ? 'text-gray-300 bg-gray-700 border-gray-600 hover:bg-gray-600 focus:ring-gray-500'
-                                            : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:ring-indigo-500'
-                                    }`}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                        <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Are you sure you want to delete this attendance record? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setDeleteRecordId(null);
+                                }}
+                                className={`px-4 py-2 ${
+                                    darkMode 
+                                        ? 'text-gray-300 border-gray-600 bg-gray-700 hover:bg-gray-600' 
+                                        : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                                } rounded-md border`}
+                                disabled={deleteLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteAttendance}
+                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-70"
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                            </button>
                         </div>
                     </div>
                 </div>
