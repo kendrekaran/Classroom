@@ -118,7 +118,7 @@ function TeacherLandingPage() {
   const userRole = admin?.role ? (admin.role.charAt(0).toUpperCase() + admin.role.slice(1)) : "Teacher";
 
   return (
-    <div className={`min-h-screen font-sans ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <div className={`min-h-screen overflow-x-hidden font-sans ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Updated Navbar to match TeacherNavbar */}
       <TeacherNavbar />
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, User, LogIn } from 'lucide-react';
+import { BookOpen, LogOut, User, LogIn, Menu, X } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import { useDarkMode } from '../utils/DarkModeContext';
 
 function TeacherNavbar() {
     const [user, setUser] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
     const { darkMode } = useDarkMode();
 
@@ -62,8 +63,27 @@ function TeacherNavbar() {
                             </div>
                         </Link>
 
-                        <div className="hidden items-center space-x-10 md:flex">
-                            {[
+                        {/* Mobile menu button */}
+                        <div className="flex md:hidden">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className={`inline-flex items-center justify-center p-2 rounded-md ${
+                                    darkMode 
+                                        ? 'text-gray-400 hover:text-red-400 hover:bg-gray-800' 
+                                        : 'text-gray-600 hover:text-red-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                {isMenuOpen ? (
+                                    <X className="h-6 w-6" />
+                                ) : (
+                                    <Menu className="h-6 w-6" />
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Desktop navigation */}
+                        <div className="hidden items-center space-x-6 md:flex">
+                            {user && [
                                 ['My Batches', '/teacher/batches'],
                                 ['Create Batch', '/teacher/batches/create']
                             ].map(([name, path]) => (
@@ -79,7 +99,7 @@ function TeacherNavbar() {
                             ))}
                         </div>
 
-                        <div className="flex items-center space-x-4">
+                        <div className="hidden md:flex items-center space-x-4">
                             <DarkModeToggle />
                             
                             {user ? (
@@ -126,9 +146,95 @@ function TeacherNavbar() {
                             )}
                         </div>
                     </div>
+
+                    {/* Mobile Menu */}
+                    {isMenuOpen && (
+                        <div className={`md:hidden pt-2 pb-3 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+                            {user && (
+                                <div className={`p-4 mb-2 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}>
+                                    <div className="flex items-center mb-3">
+                                        <div className="flex justify-center items-center w-8 h-8 bg-red-50 rounded-full">
+                                            <User className="w-4 h-4 text-red-600" />
+                                        </div>
+                                        <span className={`ml-2 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                            {user.name || "Teacher"}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        {[
+                                            ['My Batches', '/teacher/batches'],
+                                            ['Create Batch', '/teacher/batches/create']
+                                        ].map(([name, path]) => (
+                                            <Link
+                                                key={path}
+                                                to={path}
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className={`block px-3 py-2 rounded-md font-medium ${
+                                                    darkMode
+                                                        ? 'text-gray-300 hover:bg-gray-700 hover:text-red-400'
+                                                        : 'text-gray-700 hover:bg-gray-100 hover:text-red-600'
+                                                }`}
+                                            >
+                                                {name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {!user && (
+                                <div className="px-4 py-3 space-y-2">
+                                    <Link
+                                        to="/teacher/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={`flex items-center justify-center px-4 py-3 space-x-2 font-medium rounded-lg ${
+                                            darkMode
+                                                ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
+                                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <LogIn className="w-4 h-4 mr-1" />
+                                        <span>Login</span>
+                                    </Link>
+                                    
+                                    <Link
+                                        to="/teacher/signup"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex items-center justify-center px-4 py-3 space-x-2 font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                                    >
+                                        <User className="w-4 h-4 mr-1" />
+                                        <span>Signup</span>
+                                    </Link>
+                                </div>
+                            )}
+                            
+                            <div className="mt-3 px-4 py-3 flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <span className={`mr-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Theme:</span>
+                                    <DarkModeToggle />
+                                </div>
+                                
+                                {user && (
+                                    <button
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className={`flex items-center px-4 py-2 text-red-500 rounded-lg ${
+                                            darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'
+                                        }`}
+                                    >
+                                        <LogOut className="w-4 h-4 mr-1" />
+                                        <span>Logout</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </nav>
-            <div className="h-16"></div>
+            <div className={`${isScrolled ? 'h-20' : 'h-24'} transition-all duration-300`}></div>
         </header>
     );
 }

@@ -54,7 +54,7 @@ function LandingPage() {
 
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <div className={`min-h-screen overflow-x-hidden ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
       <StudentNavbar />
 
       {/* Hero Section - New Design */}
@@ -154,7 +154,7 @@ function LandingPage() {
       {/* Features Section */}
       <section className={`py-16 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
         <div className="container px-4 mx-auto">
-          <div className="max-w-2xl mx-auto mb-12 text-center">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className={`text-3xl font-bold md:text-4xl mb-4 ${darkMode ? 'text-gray-100' : ''}`}>
               Our Unique Learning Features
             </h2>
@@ -228,7 +228,7 @@ function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={`py-12 ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
+      <footer className={`py-12 ${darkMode ? 'text-gray-300 bg-gray-800' : 'text-gray-600 bg-gray-50'}`}>
         <div className="container px-4 mx-auto">
           <div className="flex flex-col justify-between md:flex-row">
             <div className="mb-8 md:mb-0">

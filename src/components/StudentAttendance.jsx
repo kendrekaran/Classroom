@@ -87,7 +87,7 @@ function StudentAttendance({ batchId }) {
                             onChange={(e) => handleDateChange('startDate', e.target.value)}
                             className={`block w-full rounded-md shadow-sm px-3 py-2 sm:text-sm ${
                                 darkMode 
-                                    ? 'bg-gray-800 border-gray-700 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500' 
+                                    ? 'text-gray-100 bg-gray-800 border-gray-700 focus:ring-indigo-500 focus:border-indigo-500' 
                                     : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
                         />
@@ -100,7 +100,7 @@ function StudentAttendance({ batchId }) {
                             onChange={(e) => handleDateChange('endDate', e.target.value)}
                             className={`block w-full rounded-md shadow-sm px-3 py-2 sm:text-sm ${
                                 darkMode 
-                                    ? 'bg-gray-800 border-gray-700 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500' 
+                                    ? 'text-gray-100 bg-gray-800 border-gray-700 focus:ring-indigo-500 focus:border-indigo-500' 
                                     : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
                         />
@@ -109,14 +109,14 @@ function StudentAttendance({ batchId }) {
             </div>
             
             {loading && (
-                <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-t-2 border-gray-500 border-t-indigo-600"></div>
+                <div className="py-8 text-center">
+                    <div className="inline-block w-8 h-8 rounded-full border-2 border-t-2 border-gray-500 animate-spin border-t-indigo-600"></div>
                     <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Loading attendance data...</p>
                 </div>
             )}
             
             {error && !loading && (
-                <div className={`p-4 rounded-md ${darkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700'}`}>
+                <div className={`p-4 rounded-md ${darkMode ? 'text-red-300 bg-red-900/30' : 'text-red-700 bg-red-50'}`}>
                     {error}
                 </div>
             )}
@@ -128,7 +128,7 @@ function StudentAttendance({ batchId }) {
                         <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                             <div className="flex items-center">
                                 <div className={`p-2 rounded-full ${darkMode ? 'bg-indigo-900/50' : 'bg-indigo-100'}`}>
-                                    <Calendar className="h-5 w-5 text-indigo-600" />
+                                    <Calendar className="w-5 h-5 text-indigo-600" />
                                 </div>
                                 <div className="ml-3">
                                     <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Classes</p>
@@ -140,7 +140,7 @@ function StudentAttendance({ batchId }) {
                         <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                             <div className="flex items-center">
                                 <div className={`p-2 rounded-full ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
                                 </div>
                                 <div className="ml-3">
                                     <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Present</p>
@@ -152,7 +152,7 @@ function StudentAttendance({ batchId }) {
                         <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                             <div className="flex items-center">
                                 <div className={`p-2 rounded-full ${darkMode ? 'bg-red-900/50' : 'bg-red-100'}`}>
-                                    <XCircle className="h-5 w-5 text-red-600" />
+                                    <XCircle className="w-5 h-5 text-red-600" />
                                 </div>
                                 <div className="ml-3">
                                     <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Absent</p>
@@ -164,7 +164,7 @@ function StudentAttendance({ batchId }) {
                         <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                             <div className="flex items-center">
                                 <div className={`p-2 rounded-full ${darkMode ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                                    <User className="h-5 w-5 text-purple-600" />
+                                    <User className="w-5 h-5 text-purple-600" />
                                 </div>
                                 <div className="ml-3">
                                     <p className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Attendance</p>
@@ -201,14 +201,14 @@ function StudentAttendance({ batchId }) {
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                     darkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
                                                 }`}>
-                                                    <CheckCircle className="mr-1 h-4 w-4" />
+                                                    <CheckCircle className="mr-1 w-4 h-4" />
                                                     Present
                                                 </span>
                                             ) : (
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                     darkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
                                                 }`}>
-                                                    <XCircle className="mr-1 h-4 w-4" />
+                                                    <XCircle className="mr-1 w-4 h-4" />
                                                     Absent
                                                 </span>
                                             )}

@@ -8,7 +8,7 @@ function AttendanceMarker({ batchId, students }) {
     const [attendance, setAttendance] = useState(
         students.map(student => ({
             student_id: student._id,
-            status: 'present',
+            status: '',
             remarks: ''
         }))
     );
@@ -48,11 +48,11 @@ function AttendanceMarker({ batchId, students }) {
                 setAttendance(mappedAttendance);
             } else if (!isEditing) {
                 setExistingAttendanceForDate(null);
-                // Reset attendance if no record exists for this date
+                // Reset attendance if no record exists for this date - now with empty status
                 setAttendance(
                     students.map(student => ({
                         student_id: student._id,
-                        status: 'present',
+                        status: '',
                         remarks: ''
                     }))
                 );
@@ -106,6 +106,14 @@ function AttendanceMarker({ batchId, students }) {
     };
 
     const handleSubmit = async () => {
+        // Check if any student has unselected status
+        const hasUnselectedStatus = attendance.some(record => !record.status);
+        
+        if (hasUnselectedStatus) {
+            setError('Please select attendance status for all students');
+            return;
+        }
+        
         try {
             setLoading(true);
             setError('');
@@ -201,7 +209,7 @@ function AttendanceMarker({ batchId, students }) {
             if (!mappedAttendance.some(a => a.student_id === student._id)) {
                 mappedAttendance.push({
                     student_id: student._id,
-                    status: 'present',
+                    status: '',
                     remarks: ''
                 });
             }
@@ -252,31 +260,45 @@ function AttendanceMarker({ batchId, students }) {
         setAttendance(
             students.map(student => ({
                 student_id: student._id,
-                status: 'present',
+                status: '',
                 remarks: ''
             }))
         );
     };
 
+    // Get status color for attendance table
+    const getStatusColor = (status) => {
+        if (status === 'present') {
+            return darkMode ? 'text-green-400' : 'text-green-600';
+        } else if (status === 'absent') {
+            return darkMode ? 'text-red-400' : 'text-red-600';
+        }
+        return darkMode ? 'text-yellow-400' : 'text-yellow-600';
+    };
+
     return (
         <div className="space-y-6">
-            <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
-                <h2 className={`mb-4 text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>{isEditing ? 'Edit Attendance' : 'Mark Attendance'}</h2>
+            <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h2 className={`mb-4 text-xl font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                    {isEditing ? 'Edit Attendance' : 'Mark Attendance'}
+                </h2>
                 
                 {error && (
-                    <div className="p-3 mb-4 text-sm text-red-700 bg-red-50 rounded-md">
+                    <div className="p-3 mb-4 text-sm text-red-700 bg-red-50 rounded-md border border-red-200 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-2" />
                         {error}
                     </div>
                 )}
                 
                 {success && (
-                    <div className="p-3 mb-4 text-sm text-green-700 bg-green-50 rounded-md">
+                    <div className="p-3 mb-4 text-sm text-green-700 bg-green-50 rounded-md border border-green-200 flex items-center">
+                        <Check className="w-4 h-4 mr-2" />
                         {success}
                     </div>
                 )}
                 
-                <div className="mb-4">
-                    <label htmlFor="date" className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className="mb-6">
+                    <label htmlFor="date" className={`block mb-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                         Date
                     </label>
                     <input
@@ -288,17 +310,18 @@ function AttendanceMarker({ batchId, students }) {
                             darkMode 
                                 ? 'bg-gray-700 text-white border-gray-600 focus:border-red-500 focus:ring-red-500' 
                                 : 'border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500'
-                        } sm:text-sm`}
+                        } sm:text-sm p-2.5`}
                         disabled={isEditing}
                     />
                     {existingAttendanceForDate && !isEditing && (
-                        <p className="mt-1 text-sm text-blue-600">
+                        <p className="mt-2 text-sm text-blue-600 flex items-center">
+                            <AlertCircle className="w-4 h-4 mr-1" />
                             Attendance for this date already exists. You can view or edit it.
                         </p>
                     )}
                 </div>
                 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
                     <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                         <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                             <tr>
@@ -317,12 +340,19 @@ function AttendanceMarker({ batchId, students }) {
                             {students.map(student => {
                                 const attendanceRecord = attendance.find(a => a.student_id === student._id);
                                 return (
-                                    <tr key={student._id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{student.name}</div>
-                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{student.email}</div>
+                                    <tr key={student._id} className={`${darkMode ? 'hover:bg-gray-750' : 'hover:bg-gray-50'} transition duration-150`}>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 ${darkMode ? 'text-gray-800' : 'text-gray-600'} flex items-center justify-center font-semibold text-lg`}>
+                                                    {student.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{student.name}</div>
+                                                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{student.email}</div>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 {existingAttendanceForDate && !isEditing ? (
                                                     <div className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
@@ -347,36 +377,39 @@ function AttendanceMarker({ batchId, students }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleAttendanceChange(student._id, 'present')}
-                                                            className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                                                            className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium transition-colors duration-150 ${
                                                                 attendanceRecord?.status === 'present'
-                                                                    ? 'bg-green-100 text-green-800 border-green-200'
+                                                                    ? 'bg-green-100 text-green-800 border-green-200 shadow-sm'
                                                                     : darkMode 
-                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600' 
-                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600 hover:text-green-400' 
+                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50 hover:text-green-700 hover:border-green-300'
                                                             }`}
                                                         >
-                                                            <Check className="mr-1 w-4 h-4" />
+                                                            <Check className={`mr-1 w-4 h-4 ${attendanceRecord?.status === 'present' ? 'text-green-600' : ''}`} />
                                                             Present
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleAttendanceChange(student._id, 'absent')}
-                                                            className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                                                            className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium transition-colors duration-150 ${
                                                                 attendanceRecord?.status === 'absent'
-                                                                    ? 'bg-red-100 text-red-800 border-red-200'
+                                                                    ? 'bg-red-100 text-red-800 border-red-200 shadow-sm'
                                                                     : darkMode 
-                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600' 
-                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600 hover:text-red-400' 
+                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50 hover:text-red-700 hover:border-red-300'
                                                             }`}
                                                         >
-                                                            <X className="mr-1 w-4 h-4" />
+                                                            <X className={`mr-1 w-4 h-4 ${attendanceRecord?.status === 'absent' ? 'text-red-600' : ''}`} />
                                                             Absent
                                                         </button>
                                                     </>
                                                 )}
                                             </div>
+                                            {!attendanceRecord?.status && !existingAttendanceForDate && (
+                                                <p className="mt-1 text-xs text-amber-500">Please select attendance status</p>
+                                            )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4">
                                             <input
                                                 type="text"
                                                 value={attendanceRecord?.remarks || ''}
@@ -386,7 +419,7 @@ function AttendanceMarker({ batchId, students }) {
                                                     darkMode 
                                                         ? 'bg-gray-700 text-white border-gray-600 focus:border-red-500 focus:ring-red-500' 
                                                         : 'border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500'
-                                                } sm:text-sm`}
+                                                } sm:text-sm p-2`}
                                             />
                                         </td>
                                     </tr>
@@ -396,7 +429,7 @@ function AttendanceMarker({ batchId, students }) {
                     </table>
                 </div>
                 
-                <div className="flex justify-end mt-4 space-x-3">
+                <div className="flex justify-end mt-6 space-x-3">
                     {isEditing && (
                         <button
                             type="button"
@@ -424,7 +457,7 @@ function AttendanceMarker({ batchId, students }) {
                             type="button"
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-70"
                         >
                             <Save className="mr-2 w-4 h-4" />
                             {loading ? 'Processing...' : (isEditing ? 'Update Attendance' : (existingAttendanceForDate ? 'Update Attendance' : 'Mark Attendance'))}
@@ -435,9 +468,9 @@ function AttendanceMarker({ batchId, students }) {
             
             {/* Previous Attendance Records */}
             {attendanceRecords.length > 0 && (
-                <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm`}>
-                    <h2 className={`mb-4 text-lg font-semibold ${darkMode ? 'text-gray-200' : ''}`}>Previous Attendance Records</h2>
-                    <div className="overflow-x-auto">
+                <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <h2 className={`mb-4 text-xl font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Previous Attendance Records</h2>
+                    <div className="overflow-x-auto rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}">
                         <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                             <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                                 <tr>
@@ -459,17 +492,29 @@ function AttendanceMarker({ batchId, students }) {
                                 {attendanceRecords.map(record => {
                                     const presentCount = record.records.filter(r => r.status === 'present').length;
                                     const totalCount = record.records.length;
+                                    const attendancePercentage = Math.round((presentCount/totalCount) * 100);
                                     return (
-                                        <tr key={record._id}>
+                                        <tr key={record._id} className={`${darkMode ? 'hover:bg-gray-750' : 'hover:bg-gray-50'} transition duration-150`}>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={darkMode ? 'text-gray-200' : ''}>
-                                                    {new Date(record.date).toLocaleDateString()}
+                                                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                    {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={darkMode ? 'text-gray-200' : ''}>
-                                                    {presentCount}/{totalCount} ({Math.round((presentCount/totalCount) * 100)}%)
-                                                </span>
+                                                <div className="flex items-center">
+                                                    <div className={`w-2/3 bg-gray-200 rounded-full h-2.5 mr-2 ${darkMode ? 'bg-gray-600' : ''}`}>
+                                                        <div 
+                                                            className={`h-2.5 rounded-full ${
+                                                                attendancePercentage > 80 ? 'bg-green-500' : 
+                                                                attendancePercentage > 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                                            }`} 
+                                                            style={{ width: `${attendancePercentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className={darkMode ? 'text-gray-200' : ''}>
+                                                        {presentCount}/{totalCount} ({attendancePercentage}%)
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={darkMode ? 'text-gray-200' : ''}>
@@ -477,20 +522,22 @@ function AttendanceMarker({ batchId, students }) {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex space-x-2">
+                                                <div className="flex space-x-3">
                                                     <button
                                                         onClick={() => handleEditAttendance(record)}
-                                                        className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-900'}`}
+                                                        className={`inline-flex items-center ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}
                                                         title="Edit attendance"
                                                     >
-                                                        <Edit className="w-5 h-5" />
+                                                        <Edit className="w-4 h-4 mr-1" />
+                                                        Edit
                                                     </button>
                                                     <button
                                                         onClick={() => confirmDelete(record._id)}
-                                                        className={`${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'}`}
+                                                        className={`inline-flex items-center ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-800'}`}
                                                         title="Delete attendance"
                                                     >
-                                                        <Trash2 className="w-5 h-5" />
+                                                        <Trash2 className="w-4 h-4 mr-1" />
+                                                        Delete
                                                     </button>
                                                 </div>
                                             </td>
@@ -506,7 +553,7 @@ function AttendanceMarker({ batchId, students }) {
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div className="flex fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
-                    <div className={`p-6 w-full max-w-md ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white'} rounded-lg`}>
+                    <div className={`p-6 w-full max-w-md ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white'} rounded-lg shadow-xl border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
                         <div className="flex items-center mb-4 text-red-600">
                             <AlertCircle className="mr-2 w-6 h-6" />
                             <h3 className="text-lg font-medium">Confirm Deletion</h3>
@@ -531,10 +578,10 @@ function AttendanceMarker({ batchId, students }) {
                             </button>
                             <button
                                 onClick={handleDeleteAttendance}
-                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-70"
+                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-70 flex items-center"
                                 disabled={deleteLoading}
                             >
-                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                                {deleteLoading ? 'Deleting...' : <><Trash2 className="w-4 h-4 mr-1" /> Delete</>}
                             </button>
                         </div>
                     </div>
