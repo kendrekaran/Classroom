@@ -9,7 +9,6 @@ import ThemeToggle from '../../components/ThemeToggle';
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email format"),
-  parentEmail: z.string().email("Invalid parent email format"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
@@ -17,7 +16,6 @@ function UserSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [parentEmail, setParentEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,12 +28,11 @@ function UserSignupPage() {
     setLoading(true);
 
     try {
-      registerSchema.parse({ name, email, parentEmail, password });
+      registerSchema.parse({ name, email, password });
       
       const response = await axios.post('http://localhost:3000/user/register', {
         name,
         email,
-        parentEmail,
         password
       });
       
@@ -75,7 +72,7 @@ function UserSignupPage() {
             </div>
           </div>
           <h1 className="mt-4 text-2xl font-bold text-center text-white">
-            Create Your Account
+            Create Student Account
           </h1>
           <p className="mt-1 text-center text-indigo-100">
             Join our learning platform
@@ -108,13 +105,13 @@ function UserSignupPage() {
                     ? 'text-white bg-gray-700 border-gray-600' 
                     : 'bg-gray-50 border-gray-300'
                 }`}
-                placeholder="Enter Student full name"
+                placeholder="Enter your full name"
               />
             </div>
 
             <div>
               <label htmlFor="email" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Your Email Address
+                Email Address
               </label>
               <input
                 id="email"
@@ -127,26 +124,7 @@ function UserSignupPage() {
                     ? 'text-white bg-gray-700 border-gray-600' 
                     : 'bg-gray-50 border-gray-300'
                 }`}
-                placeholder="Enter Student email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="parentEmail" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Parent's Email Address
-              </label>
-              <input
-                id="parentEmail"
-                type="email"
-                required
-                value={parentEmail}
-                onChange={(e) => setParentEmail(e.target.value)}
-                className={`px-4 py-3 mt-1 w-full rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  darkMode 
-                    ? 'text-white bg-gray-700 border-gray-600' 
-                    : 'bg-gray-50 border-gray-300'
-                }`}
-                placeholder="Enter parent's email"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -175,12 +153,22 @@ function UserSignupPage() {
               className={`w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 ${
                 loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating Account...' : 'Create Student Account'}
             </button>
           </form>
 
           <div className="mt-8 text-center">
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Registering as a parent?{' '}
+              <Link
+                to="/parent/signup"
+                className={`font-medium text-indigo-600 hover:text-indigo-500 ${
+                  darkMode ? 'hover:text-indigo-400' : ''}`}
+              >
+                Sign up as parent
+              </Link>
+            </p>
+            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Already have an account?{' '}
               <Link
                 to="/user/login"

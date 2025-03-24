@@ -8,6 +8,7 @@ import { useDarkMode } from '../../utils/DarkModeContext';
 const parentRegisterSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email format"),
+  studentEmail: z.string().email("Invalid student email format"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
@@ -15,6 +16,7 @@ function ParentSignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,11 +29,12 @@ function ParentSignupPage() {
     setLoading(true);
 
     try {
-      parentRegisterSchema.parse({ name, email, password });
+      parentRegisterSchema.parse({ name, email, studentEmail, password });
       
       const response = await axios.post('http://localhost:3000/user/register/parent', {
         name,
         email,
+        studentEmail,
         password
       });
       
@@ -76,7 +79,9 @@ function ParentSignupPage() {
         {/* Signup Form */}
         <div className="p-8">
           {error && (
-            <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className={`mb-6 p-3 rounded-lg text-sm ${
+              darkMode ? 'text-red-300 bg-red-900/30' : 'bg-red-50 text-red-700'
+            }`}>
               {error}
             </div>
           )}
@@ -118,6 +123,28 @@ function ParentSignupPage() {
                 }`}
                 placeholder="Enter your email"
               />
+            </div>
+
+            <div>
+              <label htmlFor="studentEmail" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Student's Email Address
+              </label>
+              <input
+                id="studentEmail"
+                type="email"
+                required
+                value={studentEmail}
+                onChange={(e) => setStudentEmail(e.target.value)}
+                className={`mt-1 w-full px-4 py-3 rounded-lg border ${
+                  darkMode 
+                    ? 'bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500' 
+                    : 'bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                }`}
+                placeholder="Enter your child's email"
+              />
+              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Your child must register first before you can create a parent account
+              </p>
             </div>
 
             <div>
