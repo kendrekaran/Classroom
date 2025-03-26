@@ -19,7 +19,8 @@ function FeesManager({ batchId }) {
         amount: '',
         paymentMethod: 'offline',
         status: 'paid',
-        remarks: ''
+        remarks: '',
+        enableOnlinePayment: false
     });
     const { darkMode } = useDarkMode();
 
@@ -87,7 +88,8 @@ function FeesManager({ batchId }) {
                 amount: existingPayment.amount || '',
                 paymentMethod: existingPayment.paymentMethod || 'offline',
                 status: existingPayment.status || 'paid',
-                remarks: existingPayment.remarks || ''
+                remarks: existingPayment.remarks || '',
+                enableOnlinePayment: existingPayment.status !== 'paid'
             });
         } else {
             setPaymentForm({
@@ -95,7 +97,8 @@ function FeesManager({ batchId }) {
                 amount: '',
                 paymentMethod: 'offline',
                 status: 'paid',
-                remarks: ''
+                remarks: '',
+                enableOnlinePayment: false
             });
         }
         
@@ -143,8 +146,14 @@ function FeesManager({ batchId }) {
                 amount: Number(paymentForm.amount),
                 paymentMethod: paymentForm.paymentMethod,
                 status: paymentForm.status,
-                remarks: paymentForm.remarks || ''
+                remarks: paymentForm.remarks || '',
+                enableOnlinePayment: paymentForm.enableOnlinePayment
             };
+            
+            // Set appropriate remarks for pending online payments
+            if (paymentForm.status === 'pending' && paymentForm.enableOnlinePayment) {
+                requestData.remarks = (requestData.remarks || '') + ' (Online payment enabled)';
+            }
             
             // Make API call
             const response = await axios.post(
@@ -190,13 +199,13 @@ function FeesManager({ batchId }) {
     const getStatusColor = (status) => {
         switch (status) {
             case 'paid':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+                return `${darkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-800'}`;
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+                return `${darkMode ? 'bg-yellow-900/20 text-yellow-400' : 'bg-white text-yellow-800'}`;
             case 'overdue':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+                return `${darkMode ? 'bg-red-900/20 text-red-400' : 'bg-white text-red-800'}`;
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                return `${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-white text-gray-800'}`;
         }
     };
 
@@ -266,8 +275,8 @@ function FeesManager({ batchId }) {
     return (
         <div className="space-y-6">
             {/* Dashboard Title */}
-            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-5 rounded-lg shadow-md`}>
-                <h2 className="text-2xl font-bold mb-2 flex items-center">
+            <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} p-5 rounded-lg shadow-md`}>
+                <h2 className="flex items-center mb-2 text-2xl font-bold">
                     <DollarSign className="mr-2 text-red-600" size={24} />
                     Fees Management Dashboard
                 </h2>
@@ -278,66 +287,66 @@ function FeesManager({ batchId }) {
 
             {/* Statistics Cards */}
             <div className={`${!statsVisible ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
+                <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+                    <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Total Collected</p>
-                                <h3 className="text-xl font-bold mt-1">₹{stats.totalCollected.toLocaleString()}</h3>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total Collected</p>
+                                <h3 className="mt-1 text-xl font-bold">₹{stats.totalCollected.toLocaleString()}</h3>
                             </div>
-                            <span className="p-2 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                            <span className={`p-2 rounded-lg ${darkMode ? 'text-green-400 bg-green-900/20' : 'text-green-800 bg-green-100'}`}>
                                 <TrendingUp size={20} />
                             </span>
                         </div>
                         <div className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <span className="text-green-500 font-medium">{stats.paymentPercentage}% </span>
+                            <span className="font-medium text-green-500">{stats.paymentPercentage}% </span>
                             of students paid
                         </div>
                     </div>
 
-                    <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
+                    <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Pending Amount</p>
-                                <h3 className="text-xl font-bold mt-1">₹{stats.pendingAmount.toLocaleString()}</h3>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pending Amount</p>
+                                <h3 className="mt-1 text-xl font-bold">₹{stats.pendingAmount.toLocaleString()}</h3>
                             </div>
-                            <span className="p-2 rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                            <span className={`p-2 rounded-lg ${darkMode ? 'text-yellow-400 bg-yellow-900/20' : 'text-yellow-800 bg-yellow-100'}`}>
                                 <FileText size={20} />
                             </span>
                         </div>
                         <div className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <span className="text-yellow-500 font-medium">{stats.pendingCount + stats.overdueCount} </span>
+                            <span className="font-medium text-yellow-500">{stats.pendingCount + stats.overdueCount} </span>
                             payments pending
                         </div>
                     </div>
 
-                    <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
+                    <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Total Students</p>
-                                <h3 className="text-xl font-bold mt-1">{stats.totalStudents}</h3>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total Students</p>
+                                <h3 className="mt-1 text-xl font-bold">{stats.totalStudents}</h3>
                             </div>
-                            <span className="p-2 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                            <span className={`p-2 rounded-lg ${darkMode ? 'text-blue-400 bg-blue-900/20' : 'text-blue-800 bg-blue-100'}`}>
                                 <UserCheck size={20} />
                             </span>
                         </div>
                         <div className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <span className="text-blue-500 font-medium">{stats.notRecordedCount} </span>
+                            <span className="font-medium text-blue-500">{stats.notRecordedCount} </span>
                             without payment records
                         </div>
                     </div>
 
-                    <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
+                    <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} rounded-lg shadow-md p-4 flex flex-col`}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Status Breakdown</p>
-                                <h3 className="text-xl font-bold mt-1">
+                                <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Status Breakdown</p>
+                                <h3 className="mt-1 text-xl font-bold">
                                     <span className="text-green-500">{stats.paidCount}</span> / 
-                                    <span className="text-yellow-500 ml-1">{stats.pendingCount}</span> / 
-                                    <span className="text-red-500 ml-1">{stats.overdueCount}</span>
+                                    <span className="ml-1 text-yellow-500">{stats.pendingCount}</span> / 
+                                    <span className="ml-1 text-red-500">{stats.overdueCount}</span>
                                 </h3>
                             </div>
-                            <span className="p-2 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                            <span className={`p-2 rounded-lg ${darkMode ? 'text-purple-400 bg-purple-900/20' : 'text-purple-800 bg-purple-100'}`}>
                                 <Calendar size={20} />
                             </span>
                         </div>
@@ -349,13 +358,13 @@ function FeesManager({ batchId }) {
             </div>
 
             {/* Action Bar */}
-            <div className={`flex flex-col sm:flex-row justify-between gap-4 items-center ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <div className={`flex flex-col sm:flex-row justify-between gap-4 items-center ${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} p-4 rounded-lg shadow-md`}>
                 <button 
                     onClick={() => setStatsVisible(!statsVisible)}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                         darkMode 
-                            ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                            ? 'text-white bg-gray-700 hover:bg-gray-600' 
+                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
                     }`}
                 >
                     {statsVisible ? 'Hide Statistics' : 'Show Statistics'}
@@ -369,8 +378,8 @@ function FeesManager({ batchId }) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={`pl-9 pr-4 py-2 w-full rounded-md border ${
                             darkMode 
-                                ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
-                                : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                ? 'text-white bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                : 'text-gray-700 bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
                         }`}
                     />
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
@@ -378,16 +387,16 @@ function FeesManager({ batchId }) {
             </div>
             
             {error && (
-                <div className="mb-4 p-3 bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 rounded-md shadow-sm">
+                <div className="p-3 mb-4 text-red-800 bg-red-100 rounded-md shadow-sm dark:bg-red-900/20 dark:text-red-400">
                     <div className="flex items-center">
-                        <AlertCircle className="w-5 h-5 mr-2" />
+                        <AlertCircle className="mr-2 w-5 h-5" />
                         {error}
                     </div>
                 </div>
             )}
             
             {/* Students Fees Table */}
-            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md overflow-hidden`}>
+            <div className={`${darkMode ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'} rounded-lg shadow-md overflow-hidden`}>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} text-left`}>
@@ -420,7 +429,7 @@ function FeesManager({ batchId }) {
                                                         <span className="ml-1 capitalize">{payment.status}</span>
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                                                         <span className="capitalize">Not Recorded</span>
                                                     </span>
                                                 )}
@@ -443,7 +452,7 @@ function FeesManager({ batchId }) {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-4 text-center text-sm">
+                                    <td colSpan="5" className="px-6 py-4 text-sm text-center">
                                         {searchTerm ? 'No students found matching your search.' : 'No students enrolled in this batch.'}
                                     </td>
                                 </tr>
@@ -456,7 +465,7 @@ function FeesManager({ batchId }) {
             {/* Payment Modal */}
             {isModalOpen && selectedStudent && (
                 <div className={`fixed inset-0 z-50 overflow-y-auto ${darkMode ? 'bg-gray-900 bg-opacity-75' : 'bg-black bg-opacity-50'}`}>
-                    <div className="flex items-center justify-center min-h-screen px-4">
+                    <div className="flex justify-center items-center px-4 min-h-screen">
                         <div className={`relative w-full max-w-md rounded-lg shadow-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} overflow-hidden`}>
                             <div className={`flex justify-between items-center px-6 py-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} bg-gradient-to-r from-red-500 to-red-600`}>
                                 <h3 className="text-lg font-semibold text-white">
@@ -473,17 +482,17 @@ function FeesManager({ batchId }) {
                             </div>
                             
                             <div className={`px-6 py-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                <div className="mb-4 p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
+                                <div className={`mb-4 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                     <p className="text-sm">
                                         <span className="font-medium">Student:</span> {selectedStudent.name}
                                     </p>
-                                    <p className="text-sm mt-1">
+                                    <p className="mt-1 text-sm">
                                         <span className="font-medium">Email:</span> {selectedStudent.email}
                                     </p>
                                 </div>
                                 
                                 {error && (
-                                    <div className="mb-4 p-3 bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 rounded-md text-sm">
+                                    <div className="p-3 mb-4 text-sm text-red-800 bg-red-100 rounded-md dark:bg-red-900/20 dark:text-red-400">
                                         {error}
                                     </div>
                                 )}
@@ -502,13 +511,13 @@ function FeesManager({ batchId }) {
                                             min="1"
                                             className={`px-3 py-2 w-full rounded-md border ${
                                                 darkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
-                                                    : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                                    ? 'text-white bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                                    : 'text-gray-700 bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
                                             }`}
                                         />
                                     </div>
                                     
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div>
                                             <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                 Payment Method
@@ -520,8 +529,8 @@ function FeesManager({ batchId }) {
                                                 required
                                                 className={`px-3 py-2 w-full rounded-md border ${
                                                     darkMode 
-                                                        ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
-                                                        : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                                        ? 'text-white bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                                        : 'text-gray-700 bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
                                                 }`}
                                             >
                                                 <option value="offline">Offline</option>
@@ -540,8 +549,8 @@ function FeesManager({ batchId }) {
                                                 required
                                                 className={`px-3 py-2 w-full rounded-md border ${
                                                     darkMode 
-                                                        ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
-                                                        : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                                        ? 'text-white bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                                        : 'text-gray-700 bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
                                                 }`}
                                             >
                                                 <option value="paid">Paid</option>
@@ -550,6 +559,33 @@ function FeesManager({ batchId }) {
                                             </select>
                                         </div>
                                     </div>
+                                    
+                                    {/* Enable Online Payment Option - Only show for pending/overdue status */}
+                                    {(paymentForm.status === 'pending' || paymentForm.status === 'overdue') && (
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="enableOnlinePayment"
+                                                name="enableOnlinePayment"
+                                                checked={paymentForm.enableOnlinePayment}
+                                                onChange={(e) => setPaymentForm(prev => ({
+                                                    ...prev,
+                                                    enableOnlinePayment: e.target.checked
+                                                }))}
+                                                className={`w-4 h-4 ${
+                                                    darkMode
+                                                        ? 'text-red-500 bg-gray-700 border-gray-600'
+                                                        : 'text-red-600 bg-white border-gray-300'
+                                                } rounded focus:ring-red-500`}
+                                            />
+                                            <label
+                                                htmlFor="enableOnlinePayment"
+                                                className={`ml-2 block text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                                            >
+                                                Enable online payment for student
+                                            </label>
+                                        </div>
+                                    )}
                                     
                                     <div>
                                         <label className={`block mb-1 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -562,8 +598,8 @@ function FeesManager({ batchId }) {
                                             rows="3"
                                             className={`px-3 py-2 w-full rounded-md border ${
                                                 darkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-red-500' 
-                                                    : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
+                                                    ? 'text-white bg-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500' 
+                                                    : 'text-gray-700 bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500'
                                             }`}
                                             placeholder="Add any additional notes about the payment..."
                                         ></textarea>
