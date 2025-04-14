@@ -34,7 +34,7 @@ function StudentFeesView({ batchId }) {
             });
 
             const response = await axios.get(
-                `http://localhost:3000/user/student/batches/${batchId}/fees`,
+                `http://localhost:3000/user/fees/student/batches/${batchId}`,
                 {
                     params: { userId: userData.id },
                     headers: {
@@ -103,7 +103,7 @@ function StudentFeesView({ batchId }) {
 
             // Request a new order from the backend
             const response = await axios.post(
-                `http://localhost:3000/user/student/batches/${batchId}/fees/initiate-payment`,
+                `http://localhost:3000/user/fees/student/batches/${batchId}/initiate-payment`,
                 { userId: userData.id },
                 {
                     headers: {
@@ -194,7 +194,7 @@ function StudentFeesView({ batchId }) {
             
             // Verify payment with backend
             const verifyResponse = await axios.post(
-                `http://localhost:3000/user/student/batches/${batchId}/fees/verify-payment`,
+                `http://localhost:3000/user/fees/student/batches/${batchId}/verify-payment`,
                 {
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
