@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Check, X, AlertCircle, DollarSign } from 'lucide-react';
+import { Check, X, AlertCircle, DollarSign, CreditCard } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useDarkMode } from '../utils/DarkModeContext';
 
@@ -8,6 +8,7 @@ function ParentFeesView({ batchId, studentId }) {
     const [loading, setLoading] = useState(true);
     const [feesPayment, setFeesPayment] = useState(null);
     const [error, setError] = useState('');
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const { darkMode } = useDarkMode();
 
     useEffect(() => {
@@ -82,6 +83,147 @@ function ParentFeesView({ batchId, studentId }) {
         }
     };
 
+    // Razorpay payment handling
+    const initiatePayment = async () => {
+        try {
+            setIsProcessingPayment(true);
+            const parentData = JSON.parse(localStorage.getItem('parentData'));
+            
+            if (!parentData || !parentData.id || !parentData.token) {
+                toast.error('Authentication required');
+                setIsProcessingPayment(false);
+                return;
+            }
+
+            // Request a new order from the backend
+            const response = await axios.post(
+                `http://localhost:3000/user/student/batches/${batchId}/fees/initiate-payment`,
+                { 
+                    userId: studentId,  // Using studentId instead of parentId
+                    isParentPayment: true,  // Add flag to indicate parent is making payment
+                    parentId: parentData.id
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${parentData.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Failed to initiate payment');
+            }
+
+            const { order, key_id, amount, student } = response.data;
+
+            // Load Razorpay script dynamically
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.async = true;
+            document.body.appendChild(script);
+
+            script.onload = () => {
+                const options = {
+                    key: key_id,
+                    amount: order.amount, // Amount in paise
+                    currency: order.currency,
+                    name: 'Classroom App',
+                    description: `Fees Payment for ${order.notes.batchName}`,
+                    order_id: order.id,
+                    prefill: {
+                        name: student.name,
+                        email: student.email,
+                        contact: student.contact
+                    },
+                    theme: {
+                        color: '#4f46e5' // Indigo color
+                    },
+                    handler: function(response) {
+                        handlePaymentSuccess(response);
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            setIsProcessingPayment(false);
+                            toast.info('Payment cancelled');
+                        }
+                    }
+                };
+
+                const razorpayWindow = new window.Razorpay(options);
+                razorpayWindow.open();
+            };
+
+            script.onerror = () => {
+                setIsProcessingPayment(false);
+                toast.error('Failed to load payment gateway');
+                document.body.removeChild(script);
+            };
+        } catch (error) {
+            console.error('Error initiating payment:', error);
+            
+            // Get a more user-friendly error message
+            let errorMessage = 'Failed to initiate payment';
+            
+            if (error.response) {
+                // Server returned an error response
+                if (error.response.data && error.response.data.error) {
+                    // Handle structured error from Razorpay
+                    if (error.response.data.error.description) {
+                        errorMessage = `Payment gateway error: ${error.response.data.error.description}`;
+                    } else {
+                        errorMessage = error.response.data.message || error.response.data.error || errorMessage;
+                    }
+                } else if (error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            toast.error(errorMessage);
+            setIsProcessingPayment(false);
+        }
+    };
+
+    const handlePaymentSuccess = async (response) => {
+        try {
+            const parentData = JSON.parse(localStorage.getItem('parentData'));
+            
+            // Verify payment with backend
+            const verifyResponse = await axios.post(
+                `http://localhost:3000/user/student/batches/${batchId}/fees/verify-payment`,
+                {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    userId: studentId,  // Using studentId instead of parentId
+                    isParentPayment: true,  // Add flag to indicate parent is making payment
+                    parentId: parentData.id
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${parentData.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (verifyResponse.data.success) {
+                toast.success('Payment successful!');
+                // Refresh fees data to show updated status
+                fetchFeesData();
+            } else {
+                throw new Error(verifyResponse.data.message || 'Payment verification failed');
+            }
+        } catch (error) {
+            console.error('Payment verification error:', error);
+            toast.error(error.response?.data?.message || error.message || 'Payment verification failed');
+        } finally {
+            setIsProcessingPayment(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm p-6`}>
@@ -149,6 +291,33 @@ function ParentFeesView({ batchId, studentId }) {
                                 <p className={`${darkMode ? 'text-gray-300 bg-gray-700' : 'text-gray-700 bg-gray-50'} p-3 rounded-md`}>
                                     {feesPayment.remarks}
                                 </p>
+                            </div>
+                        )}
+                        
+                        {/* Show pay online button for pending/overdue payments */}
+                        {(feesPayment.status === 'pending' || feesPayment.status === 'overdue') && (
+                            <div className="mt-6 flex justify-center">
+                                <button
+                                    onClick={initiatePayment}
+                                    disabled={isProcessingPayment}
+                                    className={`inline-flex items-center px-4 py-2 rounded-md text-white font-medium ${
+                                        isProcessingPayment 
+                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                            : 'bg-indigo-600 hover:bg-indigo-700'
+                                    } transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                >
+                                    {isProcessingPayment ? (
+                                        <>
+                                            <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CreditCard className="w-5 h-5 mr-2" />
+                                            Pay Online Now
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         )}
                     </div>
